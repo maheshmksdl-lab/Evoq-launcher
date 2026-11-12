@@ -1,4 +1,5 @@
 import type { z } from "zod"
+import { listApps } from "@/lib/data/apps"
 import type { appDetailsSchema } from "@/lib/schemas/app"
 
 /*
@@ -16,6 +17,10 @@ const links = (slug: string, extra: ("features" | "pricing")[] = []) => [
   { label: "Website", href: `${SITE}/${slug}` },
   ...extra.map((e) => ({ label: e === "features" ? "Features" : "Pricing", href: `${SITE}/${slug}/${e}` })),
 ]
+
+/** Deployed apps get a single link to the live app instead of the marketing site. */
+const catalogById = new Map(listApps().map((a) => [a.id, a]))
+const appLink = (id: string) => [{ label: "Open app", href: catalogById.get(id)!.productUrl }]
 
 /** Standard three-slide gallery for apps without real screenshots. */
 const drawn = (name: string, workspace: string) => [
@@ -42,7 +47,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Follow-ups that happen", body: "Tasks, reminders and meeting notes tied to the deal. Nothing relies on someone remembering." },
       { title: "AI built in", body: "Ask EVI which deals have gone quiet. Ava drafts follow-ups and updates records, then returns them for approval." },
     ],
-    links: links("crm", ["features", "pricing"]),
+    links: appLink("crm"),
     gallery: [
       { kind: "image", src: "/screens/crm-pipeline.webp", caption: "Deals pipeline in Kanban view" },
       { kind: "image", src: "/screens/crm-leads.webp", caption: "Leads list with filters and views" },
@@ -70,7 +75,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Email and outreach", body: "Design emails, schedule sends and follow up automatically when someone engages." },
       { title: "Results that tie to revenue", body: "Opens, clicks and replies roll up to the leads and deals each campaign created." },
     ],
-    links: links("campaigns"),
+    links: appLink("campaigns"),
     gallery: drawn("Campaigns", "Campaign list with audience and status"),
     window: { title: "Campaigns", subtitle: "6 active · 2 scheduled", action: "New campaign", nav: ["Overview", "Campaigns", "Audiences", "Templates", "Reports"], layout: "list", rows: [
       { title: "Autumn product launch", meta: "Email · 4,200 contacts", value: "38% open", tag: "Active" },
@@ -119,7 +124,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Maintenance plans", body: "Recurring visits are generated automatically and placed on the schedule ahead of time." },
       { title: "AI built in", body: "Kai suggests dispatch, drafts customer updates and flags SLAs at risk, then waits for approval." },
     ],
-    links: links("serviceops"),
+    links: appLink("serviceops"),
     gallery: [
       { kind: "image", src: "/screens/serviceops-requests.png", caption: "Requests from every channel" },
       { kind: "image", src: "/screens/serviceops-dispatch.png", caption: "Dispatch timeline by technician" },
@@ -147,7 +152,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Timesheets", body: "Log time against tasks and see budget versus actual for every project." },
       { title: "Status without chasing", body: "EVI summarises progress and the status agent sends owners a reminder before work slips." },
     ],
-    links: links("projects", ["features"]),
+    links: appLink("projects"),
     gallery: drawn("Projects", "Project board by stage"),
     window: { title: "Website relaunch", subtitle: "Phase 2 of 3 · due Dec 15", action: "New task", nav: ["My work", "Projects", "Timeline", "Timesheets", "Reports"], layout: "board", columns: [
       { name: "To do", items: [{ title: "Vendor contract", meta: "Due Fri" }, { title: "Test plan", meta: "Due Mon" }] },
@@ -170,7 +175,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Knowledge base", body: "Publish answers once and suggest them on tickets and in the customer portal." },
       { title: "AI triage and replies", body: "The triage agent sorts new tickets and the reply agent drafts answers for an agent to send." },
     ],
-    links: links("desk"),
+    links: appLink("desk"),
     gallery: drawn("Desk", "Ticket board by status"),
     window: { title: "Tickets", subtitle: "34 open · 2 near SLA", action: "New ticket", nav: ["Inbox", "Tickets", "Customers", "Knowledge", "Reports"], layout: "board", columns: [
       { name: "New", items: [{ title: "Login failure", meta: "Orion Foods", tag: "Urgent", flag: true }, { title: "Invoice question", meta: "Acme Corp." }] },
@@ -193,7 +198,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Reminders that cut no-shows", body: "Email and SMS reminders, easy rescheduling and a waitlist for cancelled slots." },
       { title: "One calendar", body: "Staff, rooms and appointments on a single schedule that syncs with Google Calendar." },
     ],
-    links: links("bookings"),
+    links: appLink("bookings"),
     gallery: drawn("Bookings", "Today's appointments"),
     window: { title: "Appointments", subtitle: "Today · 26 booked · 3 slots free", action: "New booking", nav: ["Calendar", "Appointments", "Spaces", "Services", "Reports"], layout: "list", rows: [
       { title: "09:00 Initial consultation", meta: "Dr. Hana Kim · Room 2", value: "45 min", tag: "Confirmed" },
@@ -217,7 +222,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Onboarding", body: "Checklists for IT, equipment and training so every joiner is ready on day one." },
       { title: "Reviews and probation", body: "Scheduled reviews, goals and probation dates with reminders for managers." },
     ],
-    links: links("hrms", ["features"]),
+    links: appLink("hrms"),
     gallery: drawn("HRMS", "People directory with open requests"),
     window: { title: "People", subtitle: "142 employees · 3 starting soon", action: "Add employee", nav: ["Home", "People", "Leave", "Onboarding", "Reports"], layout: "list", rows: [
       { title: "Sophia Hale", meta: "Starts Mon · Sales", tag: "Onboarding open", flag: true },
@@ -266,7 +271,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Tax and compliance", body: "Tax rules per region, credit notes and an audit trail on every change." },
       { title: "Collections with AI", body: "Rohan drafts reminders that match each customer's history, then waits for approval." },
     ],
-    links: links("billing", ["features", "pricing"]),
+    links: appLink("billing"),
     gallery: drawn("Billing", "Invoices with outstanding balances"),
     window: { title: "Invoices", subtitle: "$214,300 outstanding", action: "New invoice", nav: ["Overview", "Invoices", "Payments", "Customers", "Reports"], layout: "list", rows: [
       { title: "INV-2041 Acme Corp.", meta: "Due Sept 12", value: "$12,400", tag: "14 days overdue", flag: true },
@@ -290,7 +295,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Purchase orders", body: "Raise, approve and receive orders against suppliers, with partial deliveries handled." },
       { title: "Connected to the work", body: "Parts used on ServiceOps visits and items on Billing invoices update stock automatically." },
     ],
-    links: links("inventory", ["features", "pricing"]),
+    links: appLink("inventory"),
     gallery: drawn("Inventory", "Stock levels against reorder points"),
     window: { title: "Stock levels", subtitle: "1,240 items · 8 below reorder", action: "Add item", nav: ["Overview", "Items", "Locations", "Purchase orders", "Suppliers"], layout: "list", rows: [
       { title: "SKU-1182 Hydraulic hose", meta: "Reorder at 40", value: "12 left", tag: "Low stock", flag: true },
@@ -314,7 +319,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "Health you can see", body: "Every connection shows its last run, record counts and errors, with alerts when something stops." },
       { title: "Fixes with AI", body: "Leo traces a failed sync to the record and field that broke it and drafts the correction." },
     ],
-    links: links("sync", ["features", "pricing"]),
+    links: appLink("sync"),
     gallery: drawn("Sync", "Connections and their health"),
     window: { title: "Connections", subtitle: "9 connected · 1 needs attention", action: "Add connection", nav: ["Overview", "Connections", "Mappings", "Logs", "Settings"], layout: "list", rows: [
       { title: "Shopify → Inventory", meta: "Every 5 min · 1,240 items", value: "2 min ago", tag: "Healthy" },
@@ -338,7 +343,7 @@ export const appDetails: Record<string, DetailsInput> = {
       { title: "A person approves", body: "Agents prepare the work and wait for approval. Nothing reaches a customer without a yes." },
       { title: "Across every product", body: "EVI works inside every installed EVOQ app, with context that crosses product lines." },
     ],
-    links: links("ai"),
+    links: appLink("ai"),
     gallery: drawn("EVOQ AI", "Agents and the work waiting for review"),
     window: { title: "Agent activity", subtitle: "5 agents · 7 items awaiting review", action: "Assign work", nav: ["Ask EVI", "Agents", "Reviews", "Automations", "Settings"], layout: "list", rows: [
       { title: "Ava · 3 follow-up drafts", meta: "CRM · Northgate, Beta, Vertex", value: "2 min ago", tag: "Awaiting review", flag: true },
@@ -350,5 +355,81 @@ export const appDetails: Record<string, DetailsInput> = {
     stats: [{ label: "Agents active", value: "5" }, { label: "Awaiting review", value: "7" }, { label: "Hours saved", value: "41" }, { label: "Approved this week", value: "126" }],
     scene: { question: "What needs my approval today?", answer: "**7 items** from **4 agents**: follow-ups from Ava, tomorrow's dispatch plan from Kai and two reminders from Rohan.", steps: [{ text: "Agent work collected", done: true }, { text: "Grouped by product", done: true }, { text: "Awaiting your review", done: false }] },
     release: release("ai", ["Review queue across all agents", "EVI answers with links to the source record", "Sana, the onboarding agent, for HRMS"]),
+  },
+
+  healthcare: {
+    id: "healthcare",
+    headline: "Patient care and practice operations, connected in one platform.",
+    about: "The Unified Healthcare Platform and Healthcare PMS bring patient records, scheduling, billing and care coordination together, so clinical and front-desk teams work from the same data.",
+    features: [
+      { title: "Patient records", body: "One record per patient with visit history, care plans and results, available across every care setting." },
+      { title: "Scheduling & admissions", body: "Appointments, admissions and bed management on one calendar, with reminders that cut no-shows." },
+      { title: "Practice management", body: "Healthcare PMS handles billing, claims and front-desk workflows alongside the clinical record." },
+      { title: "AI built in", body: "Ask EVI about a patient's history or an outstanding claim, in plain language, from either app." },
+    ],
+    links: [
+      { label: "Unified Healthcare Platform", href: "https://healthcare-unified-platform.vercel.app/" },
+      { label: "Healthcare PMS", href: "https://healthcare-pms.vercel.app/" },
+    ],
+    gallery: [
+      { kind: "window", caption: "Patient schedule across departments" },
+      { kind: "overview", caption: "Healthcare at a glance" },
+      { kind: "evi", caption: "EVI inside the Healthcare platform" },
+    ],
+    window: { title: "Patients", subtitle: "Today · 46 visits · 3 admissions", action: "New patient", nav: ["Overview", "Patients", "Appointments", "Billing", "Reports"], layout: "list", rows: [
+      { title: "Maria Lopez · Follow-up", meta: "Cardiology · Room 4", value: "09:30", tag: "Checked in" },
+      { title: "James Carter · Admission", meta: "Orthopedics · Bed 12B", value: "Today", tag: "Pending bed", flag: true },
+      { title: "Priya Nair · Lab results", meta: "Internal medicine", value: "Ready", tag: "Awaiting review", flag: true },
+      { title: "Claim #30421", meta: "Healthcare PMS · Aetna", value: "$1,240", tag: "Submitted" },
+      { title: "Noah Brooks · Check-up", meta: "Pediatrics · Room 2", value: "11:15", tag: "Confirmed" },
+    ] },
+    stats: [{ label: "Visits today", value: "46" }, { label: "Beds occupied", value: "82%" }, { label: "Claims this week", value: "128" }, { label: "Avg. wait time", value: "11 min" }],
+    scene: { question: "Which patients are waiting on results?", answer: "**2 patients** have lab results ready for review, including **Priya Nair**'s panel from this morning.", steps: [{ text: "Results matched to charts", done: true }, { text: "Clinician notified", done: true }, { text: "Awaiting sign-off", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["Shared patient search across both apps", "Bed management board for admissions", "Claims status synced with PMS"], changelogUrl: "https://healthcare-unified-platform.vercel.app/" },
+  },
+
+  manufacturing: {
+    id: "manufacturing",
+    headline: "Production orders, shop-floor tracking and quality, in one view.",
+    about: "A manufacturing solution for production orders, shop-floor tracking and quality control. It is in development and will connect to Inventory and ServiceOps when it ships.",
+    features: [
+      { title: "Production orders", body: "Plan runs against a bill of materials, with routing steps and machine assignments." },
+      { title: "Shop-floor tracking", body: "Operators log progress and downtime by work centre, in real time." },
+      { title: "Quality control", body: "Inspection checkpoints and non-conformance records tied to each production order." },
+      { title: "Connected to the work", body: "Consumed materials and finished goods will update Inventory automatically." },
+    ],
+    links: [{ label: "Website", href: "https://evoq.one/solutions/manufacturing" }],
+    gallery: drawn("Manufacturing", "Production orders by work centre"),
+    window: { title: "Production orders", subtitle: "18 open · 3 behind schedule", action: "New order", nav: ["Overview", "Orders", "Work centres", "Quality", "Reports"], layout: "board", columns: [
+      { name: "Planned", items: [{ title: "PO-204 Bracket set", meta: "Line 2" }, { title: "PO-205 Enclosure", meta: "Line 1" }] },
+      { name: "In progress", items: [{ title: "PO-198 Gearbox", meta: "Line 3", tag: "Behind schedule", flag: true }, { title: "PO-201 Housing", meta: "Line 2" }] },
+      { name: "Quality check", items: [{ title: "PO-194 Valve body", meta: "QC station 1" }] },
+      { name: "Complete", items: [{ title: "PO-188 Panel", meta: "Today" }] },
+    ] },
+    stats: [{ label: "Open orders", value: "18" }, { label: "Behind schedule", value: "3" }, { label: "On-time rate", value: "91%" }, { label: "Units this week", value: "4,120" }],
+    scene: { question: "Which orders are behind schedule?", answer: "**3 production orders** are behind, led by **PO-198 Gearbox** on Line 3 due to a machine changeover.", steps: [{ text: "Schedule reviewed", done: true }, { text: "Catch-up plan drafted", done: true }, { text: "Awaiting your approval", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions/manufacturing" },
+  },
+
+  others: {
+    id: "others",
+    headline: "More industries, the same connected platform.",
+    about: "Hospitality, field service, financial services, construction and other industries are on the roadmap. Each will reuse the same EVOQ products, tailored with industry-specific workflows.",
+    features: [
+      { title: "Industry workflows", body: "Each industry solution combines existing EVOQ products with the terminology and steps that industry expects." },
+      { title: "Shared data model", body: "Accounts, people and finance stay in step with the rest of the suite, no separate system to maintain." },
+      { title: "Built on what you have", body: "If CRM, Billing or ServiceOps are already installed, the industry layer builds on top rather than replacing them." },
+    ],
+    links: [{ label: "Website", href: "https://evoq.one/solutions" }],
+    gallery: drawn("Others", "Industries on the roadmap"),
+    window: { title: "Industries", subtitle: "4 on the roadmap", action: "Request an industry", nav: ["Overview", "Hospitality", "Financial services", "Construction"], layout: "list", rows: [
+      { title: "Hospitality, travel & F&B", meta: "Bookings + CRM + Billing", tag: "Planned" },
+      { title: "Field service, facilities & maintenance", meta: "ServiceOps + Inventory", tag: "Planned" },
+      { title: "Financial services", meta: "CRM + Billing + Desk", tag: "Planned" },
+      { title: "Construction, engineering & real estate", meta: "Projects + Inventory", tag: "Planned" },
+    ] },
+    stats: [{ label: "Industries planned", value: "4" }, { label: "Shared products", value: "7" }, { label: "In development", value: "Manufacturing" }, { label: "Status", value: "Coming soon" }],
+    scene: { question: "Which industry comes next?", answer: "**Manufacturing** is next, followed by **Hospitality, travel & F&B**, based on current interest.", steps: [{ text: "Roadmap reviewed", done: true }, { text: "Priority list drafted", done: true }, { text: "Awaiting your input", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions" },
   },
 }

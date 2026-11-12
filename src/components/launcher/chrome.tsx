@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Globe, LayoutGrid, List, Moon, RotateCw, Search, Settings, Sun } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Globe, LayoutGrid, List, LogOut, Moon, RotateCw, Search, Settings, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { sortOptions, sortSchema, type SortKey } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
@@ -14,7 +15,14 @@ const iconBtn =
 /* ---------- Title bar ---------- */
 
 export function TitleBar() {
+  const router = useRouter()
   const { resolvedTheme, setTheme } = useTheme()
+
+  async function onLogout() {
+    await fetch("/api/auth/logout", { method: "POST" })
+    router.replace("/login")
+    router.refresh()
+  }
 
   return (
     <header className="bg-surface flex h-12 shrink-0 items-stretch border-b">
@@ -57,6 +65,9 @@ export function TitleBar() {
         <a href="https://evoq.one" target="_blank" rel="noopener noreferrer" aria-label="Settings and account on evoq.one" className={cn(iconBtn, "w-12 border-l")}>
           <Settings className="size-4" />
         </a>
+        <button type="button" aria-label="Log out" onClick={onLogout} className={cn(iconBtn, "w-12 border-l")}>
+          <LogOut className="size-4" />
+        </button>
       </div>
     </header>
   )

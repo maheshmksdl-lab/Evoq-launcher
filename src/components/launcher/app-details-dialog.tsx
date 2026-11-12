@@ -124,17 +124,23 @@ function DetailsBody({ app, position, onPrev, onNext }: BodyProps) {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
-          {(details?.links ?? [{ label: "Website", href: app.productUrl }]).map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="label-mono border-foreground/25 bg-surface hover:border-evoq-interactive hover:text-evoq-interactive inline-flex h-9 items-center gap-1.5 border px-4 font-semibold transition-colors"
-            >
-              {l.label} <ArrowUpRight className="size-3.5" />
-            </a>
-          ))}
+          {app.status === "coming-soon" ? (
+            <span className="label-mono text-muted-foreground/70 border-foreground/15 bg-surface inline-flex h-9 items-center border px-4 font-semibold">
+              Coming soon
+            </span>
+          ) : (
+            (details?.links ?? [{ label: "Open app", href: app.productUrl }]).map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="label-mono border-foreground/25 bg-surface hover:border-evoq-interactive hover:text-evoq-interactive inline-flex h-9 items-center gap-1.5 border px-4 font-semibold transition-colors"
+              >
+                {l.label} <ArrowUpRight className="size-3.5" />
+              </a>
+            ))
+          )}
           {app.agent && (
             <span className="bg-surface ml-auto hidden h-9 items-center border px-3 sm:inline-flex">
               <AgentTag app={app} />

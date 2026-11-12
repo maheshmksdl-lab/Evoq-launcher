@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const appCategorySchema = z.enum(["Growth", "Operations", "People", "Finance", "Platform", "AI"])
+export const appCategorySchema = z.enum(["Growth", "Operations", "People", "Finance", "Platform", "AI", "Solutions"])
 
 export const installStatusSchema = z.enum(["installed", "available", "update", "coming-soon"])
 
@@ -24,6 +24,8 @@ export const launcherAppSchema = z.object({
   productUrl: z.url(),
   status: installStatusSchema,
   agent: agentSchema.optional(),
+  /** Extra apps reachable from the same card (e.g. Healthcare's PMS alongside its platform). */
+  extraLinks: z.array(z.object({ label: z.string(), href: z.url() })).optional(),
 })
 
 export const launcherAppListSchema = z.array(launcherAppSchema)

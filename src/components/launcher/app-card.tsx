@@ -33,15 +33,19 @@ export function AppCard({ app, selected, onSelect }: Props) {
         <span className={cn("label-mono", selected ? "text-evoq-interactive dark:text-evoq-bright" : "text-muted-foreground")}>
           V{app.version}
         </span>
-        <a
-          href={app.productUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="label-mono text-muted-foreground hover:text-evoq-interactive inline-flex items-center gap-1 transition-colors"
-        >
-          Product page <ArrowUpRight className="size-3" />
-        </a>
+        {app.status === "coming-soon" ? (
+          <span className="label-mono text-muted-foreground/70 inline-flex items-center gap-1">Coming soon</span>
+        ) : (
+          <a
+            href={app.productUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="label-mono text-muted-foreground hover:text-evoq-interactive inline-flex items-center gap-1 transition-colors"
+          >
+            Open app <ArrowUpRight className="size-3" />
+          </a>
+        )}
       </header>
 
       <div className="flex flex-1 flex-col gap-4 p-5">

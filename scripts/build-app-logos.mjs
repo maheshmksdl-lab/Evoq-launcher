@@ -107,6 +107,23 @@ const logos = {
   bookings: tile("#64856D") + glyph(`<g ${line(W, 1.8)}>
     <rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3M8 17h6"/>
   </g>`, 1.55),
+
+  // Cyan tile, medical cross (Solutions / Healthcare).
+  healthcare: tile("#0E7490") + glyph(`<path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z" fill="${W}"/>`),
+
+  // Burnt-orange tile, outlined factory roofline with a chimney and door (Solutions / Manufacturing).
+  manufacturing: tile("#C2410C") + glyph(`
+    <g ${line(W, 1.8)}>
+      <path d="M2.5 20.5h19M4 20.5V9l4.5 3V9l4.5 3V9l4.5 3v8.5"/>
+      <path d="M8.5 20.5v-4h3v4"/>
+    </g>
+    <g fill="${W}"><rect x="4" y="4.5" width="1.8" height="2.2" rx=".3"/></g>`),
+
+  // Slate tile, 2x2 grid standing in for every other industry (Solutions / Others).
+  others: tile("#475569") + glyph(`<g fill="${W}">
+    <rect x="3" y="3" width="8" height="8" rx="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.6"/>
+    <rect x="3" y="13" width="8" height="8" rx="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.6"/>
+  </g>`),
 }
 
 for (const [id, body] of Object.entries(logos)) {

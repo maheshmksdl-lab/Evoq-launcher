@@ -76,10 +76,19 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
               App details
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={() => window.open(app.productUrl, "_blank", "noopener,noreferrer")}>
-            <ArrowUpRight />
-            Product page
-          </DropdownMenuItem>
+          {app.status !== "coming-soon" && (
+            <DropdownMenuItem onClick={() => window.open(app.productUrl, "_blank", "noopener,noreferrer")}>
+              <ArrowUpRight />
+              Open app
+            </DropdownMenuItem>
+          )}
+          {app.status !== "coming-soon" &&
+            app.extraLinks?.map((l) => (
+              <DropdownMenuItem key={l.href} onClick={() => window.open(l.href, "_blank", "noopener,noreferrer")}>
+                <ArrowUpRight />
+                {l.label}
+              </DropdownMenuItem>
+            ))}
           {canUninstall && (
             <>
               <DropdownMenuSeparator />

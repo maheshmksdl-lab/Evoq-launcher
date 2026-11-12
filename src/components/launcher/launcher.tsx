@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { AppCard } from "./app-card"
 import { AppDetailsDialog } from "./app-details-dialog"
 import { AppRow, rowGrid } from "./app-row"
+import { CategoryFilter, type CategoryFilterValue } from "./category-filter"
 import { StatusBar, TitleBar, Toolbar } from "./chrome"
 
 const sorters: Record<SortKey, (a: LauncherApp, b: LauncherApp) => number> = {
@@ -25,6 +26,7 @@ export function Launcher() {
   const { data, isPending, isFetching, error, refetch } = useQuery(appsQuery)
   const [sort, setSort] = useState<SortKey>("name-asc")
   const [search, setSearch] = useState("")
+  const [category, setCategory] = useState<CategoryFilterValue>("All")
   const [view, setView] = useState<"grid" | "list">("grid")
   const [selected, setSelected] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
@@ -34,17 +36,25 @@ export function Launcher() {
   }
   const query = useDeferredValue(search)
 
+  const all = useMemo(() => data?.apps ?? [], [data])
+
   const apps = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const list = (data?.apps ?? []).filter(
+    const list = all.filter(
       (a) =>
-        !q ||
-        [a.name, a.tagline, a.description, a.category, a.agent?.name ?? "", a.agent?.role ?? ""].some((f) => f.toLowerCase().includes(q)),
+        (category === "All" || a.category === category) &&
+        (!q ||
+          [a.name, a.tagline, a.description, a.category, a.agent?.name ?? "", a.agent?.role ?? ""].some((f) => f.toLowerCase().includes(q))),
     )
     return list.sort(sorters[sort])
-  }, [data, query, sort])
+  }, [all, query, sort, category])
 
-  const all = data?.apps ?? []
+  const categoryCounts = useMemo(() => {
+    const counts: Record<CategoryFilterValue, number> = { All: all.length, Growth: 0, Operations: 0, People: 0, Finance: 0, Platform: 0, AI: 0, Solutions: 0 }
+    for (const a of all) counts[a.category]++
+    return counts
+  }, [all])
+
   const installed = all.filter((a) => a.status === "installed" || a.status === "update").length
   const updates = all.filter((a) => a.status === "update").length
 
@@ -62,6 +72,8 @@ export function Launcher() {
         onRefresh={() => refetch()}
         refreshing={isFetching}
       />
+
+      <CategoryFilter value={category} onChange={setCategory} counts={categoryCounts} />
 
       <main className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
         {error ? (
@@ -91,7 +103,11 @@ export function Launcher() {
         ) : apps.length === 0 ? (
           <div className="text-muted-foreground flex flex-col items-center gap-2 border py-20 text-sm">
             <SearchX className="size-6" />
-            No apps match &quot;{search}&quot;.
+            {search ? (
+              <>No apps match &quot;{search}&quot;{category !== "All" && <> in {category}</>}.</>
+            ) : (
+              <>No apps in {category}.</>
+            )}
           </div>
         ) : view === "grid" ? (
           <div className={`${gridCols} border-t border-l`}>

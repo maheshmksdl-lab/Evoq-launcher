@@ -50,7 +50,16 @@ export function AppCard({ app, selected, onSelect }: Props) {
           <div className="min-w-0 pt-0.5">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h2 className="font-heading text-[22px] leading-tight font-bold tracking-tight">
-                <span className="text-evoq-charcoal dark:text-foreground">{app.name}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onSelect()
+                  }}
+                  className="text-evoq-charcoal dark:text-foreground hover:text-evoq-interactive focus-visible:ring-ring/60 text-left outline-none focus-visible:ring-3"
+                >
+                  {app.name}
+                </button>
               </h2>
               <span className="label-mono border-evoq-tint text-evoq-interactive dark:border-evoq-mid dark:text-evoq-tint border px-1.5 py-0.5 text-[9px] leading-none">
                 By EVOQ
@@ -77,7 +86,7 @@ export function AppCard({ app, selected, onSelect }: Props) {
           </div>
         </dl>
 
-        <AppActions app={app} />
+        <AppActions app={app} onDetails={onSelect} />
       </div>
     </article>
   )

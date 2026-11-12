@@ -7,6 +7,7 @@ import { appsQuery } from "@/lib/queries/apps"
 import type { LauncherApp, SortKey } from "@/lib/schemas/app"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AppCard } from "./app-card"
+import { AppDetailsDialog } from "./app-details-dialog"
 import { AppRow, rowGrid } from "./app-row"
 import { StatusBar, TitleBar, Toolbar } from "./chrome"
 
@@ -26,6 +27,11 @@ export function Launcher() {
   const [search, setSearch] = useState("")
   const [view, setView] = useState<"grid" | "list">("grid")
   const [selected, setSelected] = useState<string | null>(null)
+  const [openId, setOpenId] = useState<string | null>(null)
+  const openDetails = (id: string | null) => {
+    setOpenId(id)
+    if (id) setSelected(id)
+  }
   const query = useDeferredValue(search)
 
   const apps = useMemo(() => {
@@ -90,7 +96,7 @@ export function Launcher() {
         ) : view === "grid" ? (
           <div className={`${gridCols} border-t border-l`}>
             {apps.map((app) => (
-              <AppCard key={app.id} app={app} selected={selected === app.id} onSelect={() => setSelected(app.id)} />
+              <AppCard key={app.id} app={app} selected={selected === app.id} onSelect={() => openDetails(app.id)} />
             ))}
           </div>
         ) : (
@@ -105,11 +111,13 @@ export function Launcher() {
               <span role="columnheader" className="sr-only">Actions</span>
             </div>
             {apps.map((app) => (
-              <AppRow key={app.id} app={app} selected={selected === app.id} onSelect={() => setSelected(app.id)} />
+              <AppRow key={app.id} app={app} selected={selected === app.id} onSelect={() => openDetails(app.id)} />
             ))}
           </div>
         )}
       </main>
+
+      <AppDetailsDialog apps={apps} openId={openId} onOpenChange={openDetails} />
 
       <StatusBar checkedAt={data?.checkedAt} total={all.length} installed={installed} updates={updates} />
     </div>

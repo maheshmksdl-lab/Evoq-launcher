@@ -58,3 +58,7 @@ export function setStatus(id: string, status: InstallStatus): LauncherApp | unde
   state.set(id, status)
   return { ...app, status }
 }
+
+export function getApp(id: string): LauncherApp | undefined {
+  return listApps().find((a) => a.id === id)
+}

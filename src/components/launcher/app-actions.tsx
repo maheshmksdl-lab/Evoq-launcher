@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowUpRight, Loader2, MoreHorizontal, Trash2 } from "lucide-react"
+import { ArrowUpRight, Info, Loader2, MoreHorizontal, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { useInstallApp } from "@/lib/queries/apps"
 import type { LauncherApp } from "@/lib/schemas/app"
@@ -20,7 +20,9 @@ const primaryLabel = {
   "coming-soon": "Coming soon",
 } as const
 
-export function AppActions({ app, compact = false }: { app: LauncherApp; compact?: boolean }) {
+type Props = { app: LauncherApp; compact?: boolean; onDetails?: () => void }
+
+export function AppActions({ app, compact = false, onDetails }: Props) {
   const mutation = useInstallApp(app)
   const busy = mutation.isPending
   const removing = busy && mutation.variables === "uninstall"
@@ -68,6 +70,12 @@ export function AppActions({ app, compact = false }: { app: LauncherApp; compact
           <MoreHorizontal className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
+          {onDetails && (
+            <DropdownMenuItem onClick={onDetails}>
+              <Info />
+              App details
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => window.open(app.productUrl, "_blank", "noopener,noreferrer")}>
             <ArrowUpRight />
             Product page

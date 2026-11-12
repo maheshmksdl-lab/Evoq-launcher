@@ -60,6 +60,13 @@ npm run build
 npm run lint
 ```
 
+## App Details popup
+
+Click a card, its name, or **App details** in the "..." menu. Each app gets the same layout: header (icon, name, status, version, Launch / Open / Update, links, AI agent), a screenshot gallery with thumbnails, numbered features, and the latest release (version, date, size, platforms, what's changed). ← / → or the header arrows move between apps in the current sort and filter order.
+
+- Content: `src/lib/data/app-details.ts`, served by `GET /api/apps/[id]` and validated with `appDetailsSchema`.
+- Gallery: real screenshots for CRM and ServiceOps (`public/screens/`); every app also gets drawn product screens (`product-screens.tsx`): a workspace window, an overview dashboard and an EVI + agent conversation, all in the product's colour.
+
 ## Not wired yet
 
 - Versions, sizes and dates in `lib/data/apps.ts` are placeholders.

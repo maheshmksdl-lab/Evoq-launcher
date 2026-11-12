@@ -27,7 +27,16 @@ export function AppRow({ app, selected, onSelect }: Props) {
         <AppIcon app={app} size={40} />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-heading truncate text-base font-bold tracking-tight">{app.name}</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onSelect()
+              }}
+              className="font-heading hover:text-evoq-interactive focus-visible:ring-ring/60 truncate text-base font-bold tracking-tight outline-none focus-visible:ring-3"
+            >
+              {app.name}
+            </button>
             <StatusChip status={app.status} className="hidden sm:inline-flex" />
           </div>
           <p className="text-muted-foreground truncate text-xs">{app.description}</p>
@@ -41,7 +50,7 @@ export function AppRow({ app, selected, onSelect }: Props) {
         <AgentTag app={app} />
       </span>
       <div role="cell">
-        <AppActions app={app} compact />
+        <AppActions app={app} compact onDetails={onSelect} />
       </div>
     </div>
   )

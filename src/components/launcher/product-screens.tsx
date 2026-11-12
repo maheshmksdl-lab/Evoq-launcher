@@ -28,10 +28,8 @@ function Shell({ app, details, active, children }: ScreenProps & { active: numbe
     <div className="@container flex aspect-[16/10] w-full overflow-hidden bg-[#F5F7FB] text-[#1F2430] select-none">
       <aside className="flex w-[19%] shrink-0 flex-col gap-[0.6cqw] border-r border-[#E6EAF0] bg-white p-[1.4cqw]">
         <div className="mb-[1cqw] flex items-center gap-[0.8cqw]">
-          <span className="flex size-[3.2cqw] items-center justify-center rounded-[0.6cqw]" style={{ background: c }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={app.icon} alt="" className="size-[1.8cqw]" />
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={app.icon} alt="" className="size-[3.2cqw] shrink-0" />
           <span className="truncate text-[1.6cqw] font-bold">{app.name}</span>
         </div>
         {details.window.nav.map((n, i) => (

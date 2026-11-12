@@ -20,7 +20,7 @@ export const launcherAppSchema = z.object({
   sizeMb: z.number().positive(),
   updatedAt: z.iso.date(),
   icon: z.string(),
-  color: z.object({ primary: z.string(), depth: z.string() }),
+  color: z.object({ primary: z.string(), logo: z.string() }),
   productUrl: z.url(),
   status: installStatusSchema,
   agent: agentSchema.optional(),

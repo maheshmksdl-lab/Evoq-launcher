@@ -29,22 +29,22 @@ export function StatusChip({ status, className }: { status: InstallStatus; class
   )
 }
 
-/** Product icon tile: the product's own colour ramp with its white glyph. */
+/**
+ * The app's official logo (public/logos): a solid brand-colour tile, exactly as
+ * on evoq.one, with no gradient.
+ */
 export function AppIcon({ app, size = 56 }: { app: LauncherApp; size?: number }) {
   return (
-    <span
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={app.icon}
+      alt=""
       aria-hidden
-      className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-md shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_6px_14px_-8px_var(--tile)]"
-      style={{
-        width: size,
-        height: size,
-        ["--tile" as string]: app.color.primary,
-        background: `linear-gradient(145deg, ${app.color.primary} 0%, ${app.color.depth} 120%)`,
-      }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={app.icon} alt="" width={size * 0.5} height={size * 0.5} className="object-contain" />
-    </span>
+      width={size}
+      height={size}
+      className="shrink-0 object-contain"
+      style={{ width: size, height: size }}
+    />
   )
 }
 

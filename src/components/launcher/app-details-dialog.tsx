@@ -22,6 +22,18 @@ type Props = {
 const navBtn =
   "border-border bg-surface text-muted-foreground hover:text-foreground hover:border-evoq-tint focus-visible:ring-ring/60 inline-flex size-9 items-center justify-center border transition-colors outline-none focus-visible:ring-3 disabled:pointer-events-none disabled:opacity-40"
 
+/**
+ * Title accent = the logo's background colour. White / pale logo tiles
+ * (Skillberry, Billing) would be invisible on the light header, so those use
+ * the logo's mark colour (their primary) instead.
+ */
+function titleColor(app: LauncherApp) {
+  const hex = app.color.logo.replace("#", "")
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  return luminance > 0.85 ? app.color.primary : app.color.logo
+}
+
 const sectionLabel = (n: string, text: string) => (
   <p className="label-mono text-muted-foreground">
     {n} <span className="text-evoq-subtle">/</span> {text}
@@ -94,7 +106,7 @@ function DetailsBody({ app, position, onPrev, onNext }: BodyProps) {
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <DialogPrimitive.Title className="font-heading text-[34px] leading-tight font-bold tracking-tight">
                   <span className="text-evoq-charcoal dark:text-foreground">EVOQ </span>
-                  <span style={{ color: app.color.primary }}>{app.name.replace(/^EVOQ\s+/, "")}</span>
+                  <span style={{ color: titleColor(app) }}>{app.name.replace(/^EVOQ\s+/, "")}</span>
                 </DialogPrimitive.Title>
                 <StatusChip status={app.status} />
               </div>

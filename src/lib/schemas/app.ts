@@ -1,25 +1,44 @@
 import { z } from "zod"
 
-export const appStatusSchema = z.enum(["active", "beta", "coming-soon"])
+export const appCategorySchema = z.enum(["Growth", "Operations", "People", "Finance", "Platform", "AI"])
+
+export const installStatusSchema = z.enum(["installed", "available", "update", "coming-soon"])
+
+export const agentSchema = z.object({
+  name: z.string(),
+  role: z.string(),
+  avatar: z.string(),
+})
 
 export const launcherAppSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
+  tagline: z.string(),
   description: z.string(),
-  category: z.string(),
-  url: z.url().or(z.string().startsWith("/")),
-  status: appStatusSchema,
+  category: appCategorySchema,
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  sizeMb: z.number().positive(),
+  updatedAt: z.iso.date(),
+  icon: z.string(),
+  color: z.object({ primary: z.string(), depth: z.string() }),
+  productUrl: z.url(),
+  status: installStatusSchema,
+  agent: agentSchema.optional(),
 })
 
 export const launcherAppListSchema = z.array(launcherAppSchema)
 
+export type AppCategory = z.infer<typeof appCategorySchema>
+export type InstallStatus = z.infer<typeof installStatusSchema>
 export type LauncherApp = z.infer<typeof launcherAppSchema>
-export type AppStatus = z.infer<typeof appStatusSchema>
 
-export const appRequestSchema = z.object({
-  name: z.string().trim().min(2, "Name must be at least 2 characters"),
-  email: z.email("Enter a valid email"),
-  appName: z.string().trim().min(2, "Tell us which app you need"),
-})
+export const sortOptions = [
+  { value: "name-asc", label: "Name (A–Z)" },
+  { value: "name-desc", label: "Name (Z–A)" },
+  { value: "updated", label: "Recently updated" },
+  { value: "size", label: "Download size" },
+  { value: "category", label: "Category" },
+] as const
 
-export type AppRequest = z.infer<typeof appRequestSchema>
+export const sortSchema = z.enum(["name-asc", "name-desc", "updated", "size", "category"])
+export type SortKey = z.infer<typeof sortSchema>

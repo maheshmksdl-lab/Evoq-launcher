@@ -1,4 +1,6 @@
-# Evoq Launcher
+# EVOQ Launcher
+
+Desktop-style launcher for the EVOQ app suite: browse every EVOQ product, install / update / open it, and see which AI agent works inside it.
 
 ## Stack
 
@@ -6,19 +8,48 @@
 - **Tailwind CSS v4** (CSS-first config in `src/app/globals.css`)
 - **shadcn/ui** (`base-nova` style, Base UI primitives, lucide icons): add components with `npx shadcn@latest add <name>`
 - **TanStack Query v5** (provider in `src/components/providers.tsx`, devtools in dev)
-- **Zod v4** (schemas in `src/lib/schemas`, used on both client and API routes)
+- **Zod v4** (schemas in `src/lib/schemas`, validated on both the API and the client)
+
+## Design system
+
+Brand tokens come from the evoq.one site (`Payload-cms/inner pages/evoq-one`):
+
+| Token | Hex | Use |
+|---|---|---|
+| `evoq-indigo` | `#1A1190` | Primary buttons, active toggles |
+| `evoq-interactive` | `#4747E0` | Selection rule, links, focus ring |
+| `evoq-tint` / `evoq-soft` | `#BDBDFF` / `#F2F2FF` | Chips, selected card wash |
+| `evoq-charcoal` | `#1F2430` | Headings and body ink |
+| `evoq-muted` / `evoq-body` | `#667085` / `#5F6B7A` | Secondary text |
+| `evoq-line` / `evoq-bg` | `#E6EAF0` / `#F8FAFC` | Hairlines, page background |
+
+- Type: **Figtree** (display), **DM Sans** (body), Geist Mono for the uppercase micro-labels (`label-mono` utility).
+- Each product's icon tile uses its own brand ramp (`primary` → `depth`) from evoq.one's `PALETTE`.
+- AI cast: **EVI** (assistant) plus product agents: Ava (CRM follow-ups), Kai (ServiceOps dispatch), Rohan (Billing collections), Leo (Sync), Sana (HRMS onboarding).
 
 ## Layout
 
 ```
 src/
-  app/                 routes, layout, API route handlers (app/api/*)
-  components/ui/       shadcn components (generated, editable)
-  components/launcher/ feature components
-  components/providers.tsx  QueryClient + theme + toaster
-  lib/schemas/         Zod schemas and inferred types
-  lib/queries/         TanStack queryOptions (shared query keys)
-  lib/data/            placeholder data
+  app/
+    page.tsx                         renders <Launcher />
+    api/apps/route.ts                GET catalog + install state (dynamic)
+    api/apps/[id]/install/route.ts   POST install / DELETE uninstall (simulated)
+  components/launcher/
+    launcher.tsx    state: sort, search, view, selection
+    chrome.tsx      title bar, toolbar, status bar
+    app-card.tsx    grid cell
+    app-row.tsx     list row
+    app-actions.tsx install/open/update button + "..." menu
+    status.tsx      status chip, icon tile, agent tag
+  lib/
+    data/apps.ts      product catalog + in-memory install state (placeholder)
+    schemas/app.ts    Zod schemas and types
+    queries/apps.ts   TanStack queryOptions + install mutation
+public/
+  apps/        product glyphs (white, from evoq.one footer icons)
+  characters/  EVI and agent avatars
+  brand/       EVOQ logo and mark
 ```
 
 ## Scripts
@@ -28,4 +59,8 @@ npm run dev     # http://localhost:3000
 npm run build
 npm run lint
 ```
-# Evoq-launcher
+
+## Not wired yet
+
+- Versions, sizes and dates in `lib/data/apps.ts` are placeholders.
+- Install state is in server memory and resets on restart; replace the install route with the real installer API.

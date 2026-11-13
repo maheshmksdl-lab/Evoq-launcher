@@ -1,65 +1,52 @@
 "use client"
 
-import { ArrowUpRight, Info, Loader2, MoreHorizontal, Trash2 } from "lucide-react"
+import { ArrowUpRight, Info, Loader2, MoreHorizontal } from "lucide-react"
 import { toast } from "sonner"
-import { useInstallApp } from "@/lib/queries/apps"
+import { useRequestAccess } from "@/lib/queries/apps"
 import type { LauncherApp } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
-const primaryLabel = {
-  available: "Launch",
-  installed: "Open",
-  update: "Update",
-  "coming-soon": "Coming soon",
-} as const
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 type Props = { app: LauncherApp; compact?: boolean; onDetails?: () => void }
 
-export function AppActions({ app, compact = false, onDetails }: Props) {
-  const mutation = useInstallApp(app)
-  const busy = mutation.isPending
-  const removing = busy && mutation.variables === "uninstall"
-  const canUninstall = app.status === "installed" || app.status === "update"
+/** True when this user may open the app: the org subscribes and the user is granted. */
+export const canOpenApp = (app: LauncherApp) => app.access === "granted" && (app.status === "installed" || app.status === "update")
 
-  function run(action: "install" | "uninstall") {
-    mutation.mutate(action, {
-      onSuccess: (a) =>
-        toast.success(action === "install" ? `${a.name} ${app.status === "update" ? "updated" : "installed"}` : `${a.name} removed`),
+export function AppActions({ app, compact = false, onDetails }: Props) {
+  const mutation = useRequestAccess(app)
+  const open = canOpenApp(app)
+  const comingSoon = app.status === "coming-soon"
+  const requested = app.access === "requested"
+
+  function onPrimary() {
+    if (open) {
+      window.open(app.productUrl, "_blank", "noopener,noreferrer")
+      return
+    }
+    mutation.mutate(undefined, {
+      onSuccess: (a) => toast.success(`Access to ${a.name} requested. An admin will review it.`),
       onError: (err) => toast.error(`${app.name}: ${err.message}`),
     })
   }
 
-  function onPrimary() {
-    if (app.status === "installed") {
-      window.open(app.productUrl, "_blank", "noopener,noreferrer")
-      return
-    }
-    run("install")
-  }
+  const label = comingSoon ? "Coming soon" : open ? "Open" : requested ? "Requested" : "Request access"
 
   return (
     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
       <button
         type="button"
         onClick={onPrimary}
-        disabled={busy || app.status === "coming-soon"}
+        disabled={mutation.isPending || comingSoon || requested}
         className={cn(
           "label-mono focus-visible:ring-ring/60 inline-flex h-9 flex-1 items-center justify-center gap-2 font-semibold transition-colors outline-none focus-visible:ring-3 disabled:cursor-not-allowed",
           compact && "w-28 flex-none",
-          app.status === "installed"
+          open
             ? "border-primary text-primary hover:bg-primary hover:text-primary-foreground border bg-transparent"
             : "bg-primary text-primary-foreground hover:bg-evoq-interactive dark:hover:bg-evoq-tint disabled:opacity-60",
         )}
       >
-        {busy && <Loader2 className="size-3.5 animate-spin" />}
-        {busy ? (removing ? "Removing" : app.status === "update" ? "Updating" : "Launching") : primaryLabel[app.status]}
+        {mutation.isPending && <Loader2 className="size-3.5 animate-spin" />}
+        {mutation.isPending ? "Requesting" : label}
       </button>
 
       <DropdownMenu>
@@ -76,28 +63,19 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
               App details
             </DropdownMenuItem>
           )}
-          {app.status !== "coming-soon" && (
+          {open && (
             <DropdownMenuItem onClick={() => window.open(app.productUrl, "_blank", "noopener,noreferrer")}>
               <ArrowUpRight />
               Open app
             </DropdownMenuItem>
           )}
-          {app.status !== "coming-soon" &&
+          {open &&
             app.extraLinks?.map((l) => (
               <DropdownMenuItem key={l.href} onClick={() => window.open(l.href, "_blank", "noopener,noreferrer")}>
                 <ArrowUpRight />
                 {l.label}
               </DropdownMenuItem>
             ))}
-          {canUninstall && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" disabled={busy} onClick={() => run("uninstall")}>
-                <Trash2 />
-                Uninstall
-              </DropdownMenuItem>
-            </>
-          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -111,6 +111,11 @@ const logos = {
   // Cyan tile, medical cross (Solutions / Healthcare).
   healthcare: tile("#0E7490") + glyph(`<path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z" fill="${W}"/>`),
 
+  // Same teal as Healthcare, clipboard with a medical cross (Solutions / Healthcare PMS).
+  "healthcare-pms": tile("#0E7490") + glyph(`
+    <g ${line(W, 1.8)}><rect x="5" y="4.5" width="14" height="17" rx="2"/><path d="M9 4.5V3.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/></g>
+    <path d="M11 9.5h2v2.5h2.5v2H13v2.5h-2V14H8.5v-2H11z" fill="${W}"/>`),
+
   // Burnt-orange tile, outlined factory roofline with a chimney and door (Solutions / Manufacturing).
   manufacturing: tile("#C2410C") + glyph(`
     <g ${line(W, 1.8)}>
@@ -119,10 +124,19 @@ const logos = {
     </g>
     <g fill="${W}"><rect x="4" y="4.5" width="1.8" height="2.2" rx=".3"/></g>`),
 
-  // Slate tile, 2x2 grid standing in for every other industry (Solutions / Others).
-  others: tile("#475569") + glyph(`<g fill="${W}">
-    <rect x="3" y="3" width="8" height="8" rx="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.6"/>
-    <rect x="3" y="13" width="8" height="8" rx="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.6"/>
+  // Industry solutions. Tile colours are each industry's brand colour from the
+  // Solutions menu on evoq.one (Topbar SOLUTION_BRAND); glyphs are its SOLUTION_ICONS.
+  construction: tile("#B5532F") + glyph(`<g ${line(W, 1.8)}>
+    <path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16M14 10h5a1 1 0 0 1 1 1v10M2 21h20"/><path d="M8 8h2M8 12h2M8 16h2"/>
+  </g>`),
+  "field-service": tile("#1F5FE0") + glyph(`<path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.4 2.4-2.6-.6-.6-2.6z" ${line(W, 1.8)}/>`),
+  hospitality: tile("#1F4D3A") + glyph(`<g ${line(W, 1.8)}>
+    <path d="M3 20V8M3 14h18v6M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.6"/>
+  </g>`),
+  "financial-services": tile("#0B2D4F") + glyph(`<path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18" ${line(W, 1.8)}/>`),
+  "all-industries": tile("#1E40AF") + glyph(`<g ${line(W, 1.8)}>
+    <rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/>
+    <rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>
   </g>`),
 }
 

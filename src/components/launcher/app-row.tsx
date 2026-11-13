@@ -37,7 +37,7 @@ export function AppRow({ app, selected, onSelect }: Props) {
             >
               {app.name}
             </button>
-            <StatusChip status={app.status} className="hidden sm:inline-flex" />
+            <StatusChip app={app} className="hidden sm:inline-flex" />
           </div>
           <p className="text-muted-foreground truncate text-xs">{app.description}</p>
         </div>

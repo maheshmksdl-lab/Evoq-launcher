@@ -8,7 +8,7 @@ import { appDetailsQuery } from "@/lib/queries/apps"
 import type { AppDetails, GallerySlide, LauncherApp } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AppActions } from "./app-actions"
+import { AppActions, canOpenApp } from "./app-actions"
 import { EviScreen, OverviewScreen, WindowScreen } from "./product-screens"
 import { AgentTag, AppIcon, formatDate, StatusChip } from "./status"
 
@@ -108,7 +108,7 @@ function DetailsBody({ app, position, onPrev, onNext }: BodyProps) {
                   <span className="text-evoq-charcoal dark:text-foreground">EVOQ </span>
                   <span style={{ color: titleColor(app) }}>{app.name.replace(/^EVOQ\s+/, "")}</span>
                 </DialogPrimitive.Title>
-                <StatusChip status={app.status} />
+                <StatusChip app={app} />
               </div>
               <DialogPrimitive.Description className="text-foreground/85 mt-1 text-base">
                 {details?.headline ?? app.description}
@@ -129,7 +129,10 @@ function DetailsBody({ app, position, onPrev, onNext }: BodyProps) {
               Coming soon
             </span>
           ) : (
-            (details?.links ?? [{ label: "Open app", href: app.productUrl }]).map((l) => (
+            (details?.links ?? [{ label: "Open app", href: app.productUrl }])
+              // Only users who can open the app see a direct "Open app" link.
+              .filter((l) => l.label !== "Open app" || canOpenApp(app))
+              .map((l) => (
               <a
                 key={l.href}
                 href={l.href}

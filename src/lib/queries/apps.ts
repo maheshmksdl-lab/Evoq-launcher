@@ -9,6 +9,8 @@ import {
 
 const appsResponseSchema = z.object({
   checkedAt: z.iso.datetime(),
+  /** Maintenance banner set by an admin (Admin Portal → Settings). */
+  banner: z.string().nullable().default(null),
   apps: launcherAppListSchema,
 })
 export type AppsResponse = z.infer<typeof appsResponseSchema>
@@ -39,22 +41,19 @@ export const appDetailsQuery = (id: string) =>
     staleTime: 10 * 60 * 1000,
   })
 
-type InstallAction = "install" | "uninstall"
-
-async function runInstall({ id, action }: { id: string; action: InstallAction }) {
-  const res = await fetch(`/api/apps/${encodeURIComponent(id)}/install`, {
-    method: action === "install" ? "POST" : "DELETE",
-  })
-  if (!res.ok) throw new Error(action === "install" ? "Install failed" : "Uninstall failed")
-  return launcherAppSchema.parse(await res.json())
+async function requestAccess(id: string) {
+  const res = await fetch(`/api/apps/${encodeURIComponent(id)}/request`, { method: "POST" })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? "Your request couldn't be sent")
+  return launcherAppSchema.parse(data)
 }
 
-/** Install / uninstall one app and patch it into the cached catalog. */
-export function useInstallApp(app: LauncherApp) {
+/** Ask an admin for access to one app; patches the cached catalog. */
+export function useRequestAccess(app: LauncherApp) {
   const qc = useQueryClient()
   return useMutation({
-    mutationKey: ["install", app.id],
-    mutationFn: (action: InstallAction) => runInstall({ id: app.id, action }),
+    mutationKey: ["request-access", app.id],
+    mutationFn: () => requestAccess(app.id),
     onSuccess: (updated) => {
       qc.setQueryData<AppsResponse>(appsQuery.queryKey, (prev) =>
         prev && { ...prev, apps: prev.apps.map((a) => (a.id === updated.id ? updated : a)) },

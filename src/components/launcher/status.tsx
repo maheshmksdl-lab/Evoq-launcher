@@ -7,7 +7,7 @@ const statusStyle: Record<InstallStatus, { label: string; className: string }> =
     className: "border-evoq-tint bg-evoq-soft text-evoq-interactive dark:border-evoq-mid/60 dark:bg-evoq-indigo/30 dark:text-evoq-tint",
   },
   installed: {
-    label: "Installed",
+    label: "Subscribed",
     className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
   },
   update: {
@@ -20,8 +20,25 @@ const statusStyle: Record<InstallStatus, { label: string; className: string }> =
   },
 }
 
-export function StatusChip({ status, className }: { status: InstallStatus; className?: string }) {
-  const s = statusStyle[status]
+const accessStyle = {
+  none: { label: "No access", className: "border-border bg-muted text-muted-foreground" },
+  requested: {
+    label: "Access requested",
+    className: "border-evoq-tint bg-evoq-soft text-evoq-interactive dark:border-evoq-mid/60 dark:bg-evoq-indigo/30 dark:text-evoq-tint",
+  },
+}
+
+/** Status as this user sees it: org subscription combined with their own access. */
+export function StatusChip({ app, className }: { app: Pick<LauncherApp, "status" | "access">; className?: string }) {
+  const subscribed = app.status === "installed" || app.status === "update"
+  const s =
+    app.status === "coming-soon"
+      ? statusStyle["coming-soon"]
+      : app.access === "requested"
+        ? accessStyle.requested
+        : subscribed && app.access !== "granted"
+          ? accessStyle.none
+          : statusStyle[app.status]
   return (
     <span className={cn("label-mono inline-flex h-5 items-center border px-1.5 text-[10px] leading-none", s.className, className)}>
       {s.label}

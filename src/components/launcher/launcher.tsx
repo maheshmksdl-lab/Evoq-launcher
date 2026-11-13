@@ -3,6 +3,7 @@
 import { useDeferredValue, useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { SearchX } from "lucide-react"
+import { industries, industryLabel, type IndustryFilter } from "@/lib/industries"
 import { appsQuery } from "@/lib/queries/apps"
 import type { LauncherApp, SortKey } from "@/lib/schemas/app"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -27,6 +28,18 @@ export function Launcher() {
   const [sort, setSort] = useState<SortKey>("name-asc")
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState<CategoryFilterValue>("All")
+  // Industry solutions dropdown. Works like a category: picking one clears the
+  // pills, and picking a pill clears it.
+  const [industry, setIndustry] = useState<IndustryFilter | null>(null)
+  const pickCategory = (c: CategoryFilterValue) => {
+    setCategory(c)
+    setIndustry(null)
+  }
+  const pickIndustry = (i: IndustryFilter) => {
+    setIndustry(i)
+    setCategory("All")
+  }
+  const filterLabel = industry ? industryLabel(industry) : category
   const [view, setView] = useState<"grid" | "list">("grid")
   const [selected, setSelected] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
@@ -40,14 +53,24 @@ export function Launcher() {
 
   const apps = useMemo(() => {
     const q = query.trim().toLowerCase()
+    const matchesFilter = (a: LauncherApp) =>
+      industry === "all"
+        ? a.category === "Solutions"
+        : industry
+          ? a.industry === industry
+          : category === "All" || a.category === category
     const list = all.filter(
       (a) =>
-        (category === "All" || a.category === category) &&
+        matchesFilter(a) &&
         (!q ||
           [a.name, a.tagline, a.description, a.category, a.agent?.name ?? "", a.agent?.role ?? ""].some((f) => f.toLowerCase().includes(q))),
     )
-    return list.sort(sorters[sort])
-  }, [all, query, sort, category])
+    // Products follow the chosen sort; industry solutions stay together after
+    // them, in catalog order (Healthcare first, All Industries last).
+    const products = list.filter((a) => a.category !== "Solutions").sort(sorters[sort])
+    const industries = list.filter((a) => a.category === "Solutions")
+    return [...products, ...industries]
+  }, [all, query, sort, category, industry])
 
   const categoryCounts = useMemo(() => {
     const counts: Record<CategoryFilterValue, number> = { All: all.length, Growth: 0, Operations: 0, People: 0, Finance: 0, Platform: 0, AI: 0, Solutions: 0 }
@@ -55,12 +78,27 @@ export function Launcher() {
     return counts
   }, [all])
 
-  const installed = all.filter((a) => a.status === "installed" || a.status === "update").length
+  const industryCounts = useMemo(() => {
+    const counts = Object.fromEntries(industries.map((i) => [i.id, 0])) as Record<IndustryFilter, number>
+    counts.all = 0
+    for (const a of all) {
+      if (a.category === "Solutions") counts.all++
+      if (a.industry) counts[a.industry]++
+    }
+    return counts
+  }, [all])
+
+  const installed = all.filter((a) => a.access === "granted" && (a.status === "installed" || a.status === "update")).length
   const updates = all.filter((a) => a.status === "update").length
 
   return (
     <div className="flex h-dvh flex-col">
       <TitleBar />
+      {data?.banner && (
+        <div role="status" className="border-b border-amber-300 bg-amber-50 px-5 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+          {data.banner}
+        </div>
+      )}
 
       <Toolbar
         sort={sort}
@@ -73,7 +111,14 @@ export function Launcher() {
         refreshing={isFetching}
       />
 
-      <CategoryFilter value={category} onChange={setCategory} counts={categoryCounts} />
+      <CategoryFilter
+        value={category}
+        onChange={pickCategory}
+        counts={categoryCounts}
+        industry={industry}
+        onIndustryChange={pickIndustry}
+        industryCounts={industryCounts}
+      />
 
       <main className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
         {error ? (
@@ -104,9 +149,9 @@ export function Launcher() {
           <div className="text-muted-foreground flex flex-col items-center gap-2 border py-20 text-sm">
             <SearchX className="size-6" />
             {search ? (
-              <>No apps match &quot;{search}&quot;{category !== "All" && <> in {category}</>}.</>
+              <>No apps match &quot;{search}&quot;{filterLabel !== "All" && <> in {filterLabel}</>}.</>
             ) : (
-              <>No apps in {category}.</>
+              <>No apps in {filterLabel}.</>
             )}
           </div>
         ) : view === "grid" ? (

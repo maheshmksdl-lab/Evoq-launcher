@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { userAuthClient } from "@/lib/auth/client"
 import { Globe, LayoutGrid, List, LogOut, Moon, RotateCw, Search, Settings, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { sortOptions, sortSchema, type SortKey } from "@/lib/schemas/app"
@@ -19,7 +21,7 @@ export function TitleBar() {
   const { resolvedTheme, setTheme } = useTheme()
 
   async function onLogout() {
-    await fetch("/api/auth/logout", { method: "POST" })
+    await userAuthClient.signOut()
     router.replace("/login")
     router.refresh()
   }
@@ -50,7 +52,7 @@ export function TitleBar() {
               <span className="text-muted-foreground"> · ready</span>
             </span>
           </TooltipTrigger>
-          <TooltipContent side="bottom">EVI, the EVOQ AI assistant, works inside every installed app.</TooltipContent>
+          <TooltipContent side="bottom">EVI, the EVOQ AI assistant, works inside every subscribed app.</TooltipContent>
         </Tooltip>
 
         <button
@@ -62,9 +64,9 @@ export function TitleBar() {
           <Sun className="size-4 dark:hidden" />
           <Moon className="hidden size-4 dark:block" />
         </button>
-        <a href="https://evoq.one" target="_blank" rel="noopener noreferrer" aria-label="Settings and account on evoq.one" className={cn(iconBtn, "w-12 border-l")}>
+        <Link href="/account" aria-label="Account settings" className={cn(iconBtn, "w-12 border-l")}>
           <Settings className="size-4" />
-        </a>
+        </Link>
         <button type="button" aria-label="Log out" onClick={onLogout} className={cn(iconBtn, "w-12 border-l")}>
           <LogOut className="size-4" />
         </button>
@@ -196,7 +198,7 @@ export function StatusBar({ checkedAt, total, installed, updates }: { checkedAt?
       <span className="ml-auto hidden items-center gap-3 sm:flex">
         <span>{total} apps</span>
         <span aria-hidden>·</span>
-        <span>{installed} installed</span>
+        <span>{installed} subscribed</span>
         {updates > 0 && (
           <>
             <span aria-hidden>·</span>

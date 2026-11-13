@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import { listApps } from "@/lib/data/apps"
+import { catalogApps } from "@/lib/data/apps"
 import type { appDetailsSchema } from "@/lib/schemas/app"
 
 /*
@@ -19,7 +19,7 @@ const links = (slug: string, extra: ("features" | "pricing")[] = []) => [
 ]
 
 /** Deployed apps get a single link to the live app instead of the marketing site. */
-const catalogById = new Map(listApps().map((a) => [a.id, a]))
+const catalogById = new Map(catalogApps.map((a) => [a.id, a]))
 const appLink = (id: string) => [{ label: "Open app", href: catalogById.get(id)!.productUrl }]
 
 /** Standard three-slide gallery for apps without real screenshots. */
@@ -359,22 +359,22 @@ export const appDetails: Record<string, DetailsInput> = {
 
   healthcare: {
     id: "healthcare",
-    headline: "Patient care and practice operations, connected in one platform.",
-    about: "The Unified Healthcare Platform and Healthcare PMS bring patient records, scheduling, billing and care coordination together, so clinical and front-desk teams work from the same data.",
+    headline: "Patient care, scheduling and admissions, connected in one platform.",
+    about: "The Unified Healthcare Platform brings patient records, scheduling, admissions and care coordination together, so clinical teams work from the same data. It shares patients with Healthcare PMS for billing and front-desk work.",
     features: [
       { title: "Patient records", body: "One record per patient with visit history, care plans and results, available across every care setting." },
       { title: "Scheduling & admissions", body: "Appointments, admissions and bed management on one calendar, with reminders that cut no-shows." },
-      { title: "Practice management", body: "Healthcare PMS handles billing, claims and front-desk workflows alongside the clinical record." },
-      { title: "AI built in", body: "Ask EVI about a patient's history or an outstanding claim, in plain language, from either app." },
+      { title: "Care coordination", body: "Referrals, results and follow-ups routed to the right clinician, with nothing lost between departments." },
+      { title: "AI built in", body: "Ask EVI about a patient's history or pending results, in plain language." },
     ],
     links: [
-      { label: "Unified Healthcare Platform", href: "https://healthcare-unified-platform.vercel.app/" },
-      { label: "Healthcare PMS", href: "https://healthcare-pms.vercel.app/" },
+      { label: "Open app", href: "https://healthcare-unified-platform.vercel.app/" },
+      { label: "Healthcare solution", href: "https://evoq.one/solutions/healthcare" },
     ],
     gallery: [
       { kind: "window", caption: "Patient schedule across departments" },
-      { kind: "overview", caption: "Healthcare at a glance" },
-      { kind: "evi", caption: "EVI inside the Healthcare platform" },
+      { kind: "overview", caption: "Unified Healthcare Platform at a glance" },
+      { kind: "evi", caption: "EVI inside the Unified Healthcare Platform" },
     ],
     window: { title: "Patients", subtitle: "Today · 46 visits · 3 admissions", action: "New patient", nav: ["Overview", "Patients", "Appointments", "Billing", "Reports"], layout: "list", rows: [
       { title: "Maria Lopez · Follow-up", meta: "Cardiology · Room 4", value: "09:30", tag: "Checked in" },
@@ -385,7 +385,38 @@ export const appDetails: Record<string, DetailsInput> = {
     ] },
     stats: [{ label: "Visits today", value: "46" }, { label: "Beds occupied", value: "82%" }, { label: "Claims this week", value: "128" }, { label: "Avg. wait time", value: "11 min" }],
     scene: { question: "Which patients are waiting on results?", answer: "**2 patients** have lab results ready for review, including **Priya Nair**'s panel from this morning.", steps: [{ text: "Results matched to charts", done: true }, { text: "Clinician notified", done: true }, { text: "Awaiting sign-off", done: false }] },
-    release: { platforms: PLATFORMS, changes: ["Shared patient search across both apps", "Bed management board for admissions", "Claims status synced with PMS"], changelogUrl: "https://healthcare-unified-platform.vercel.app/" },
+    release: { platforms: PLATFORMS, changes: ["Shared patient search with Healthcare PMS", "Bed management board for admissions", "Results routed to the ordering clinician"], changelogUrl: "https://healthcare-unified-platform.vercel.app/" },
+  },
+
+  "healthcare-pms": {
+    id: "healthcare-pms",
+    headline: "Front desk, appointments, billing and claims for every practice.",
+    about: "Healthcare PMS runs the practice side of care: patient registration, appointments, billing and insurance claims. It shares patients with the Unified Healthcare Platform, so the front desk and clinicians see the same record.",
+    features: [
+      { title: "Front desk and registration", body: "Check patients in, capture insurance details and keep demographics up to date." },
+      { title: "Appointments", body: "Book, reschedule and confirm visits across providers and rooms, with automatic reminders." },
+      { title: "Billing and claims", body: "Charges captured from each visit, claims submitted to payers and their status tracked to payment." },
+      { title: "Practice reporting", body: "Revenue, collections and appointment volumes by provider and location." },
+    ],
+    links: [
+      { label: "Open app", href: "https://healthcare-pms.vercel.app/" },
+      { label: "Healthcare solution", href: "https://evoq.one/solutions/healthcare" },
+    ],
+    gallery: [
+      { kind: "window", caption: "Claims and billing queue" },
+      { kind: "overview", caption: "Healthcare PMS at a glance" },
+      { kind: "evi", caption: "EVI inside Healthcare PMS" },
+    ],
+    window: { title: "Claims", subtitle: "128 this week · 6 need attention", action: "New claim", nav: ["Front desk", "Appointments", "Claims", "Billing", "Reports"], layout: "list", rows: [
+      { title: "Claim #30421 · Maria Lopez", meta: "Aetna · Cardiology follow-up", value: "$1,240", tag: "Submitted" },
+      { title: "Claim #30418 · James Carter", meta: "Blue Cross · Orthopedic admission", value: "$8,650", tag: "Denied", flag: true },
+      { title: "Claim #30415 · Priya Nair", meta: "Cigna · Lab panel", value: "$320", tag: "Paid" },
+      { title: "Claim #30412 · Noah Brooks", meta: "UnitedHealthcare · Check-up", value: "$180", tag: "Missing code", flag: true },
+      { title: "Claim #30409 · Emily Carter", meta: "Self-pay · Dermatology", value: "$95", tag: "Invoiced" },
+    ] },
+    stats: [{ label: "Appointments today", value: "62" }, { label: "Claims this week", value: "128" }, { label: "Collected this month", value: "$214k" }, { label: "Avg. days to pay", value: "18" }],
+    scene: { question: "Which claims need attention?", answer: "**6 claims** need attention. **Claim #30418** was denied for a missing pre-authorisation, worth **$8,650**.", steps: [{ text: "128 claims reviewed", done: true }, { text: "Resubmission drafted", done: true }, { text: "Awaiting your approval", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["Claims status tracked to payment", "Insurance details captured at check-in", "Shared patient search with the Unified Healthcare Platform"], changelogUrl: "https://healthcare-pms.vercel.app/" },
   },
 
   manufacturing: {
@@ -411,25 +442,125 @@ export const appDetails: Record<string, DetailsInput> = {
     release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions/manufacturing" },
   },
 
-  others: {
-    id: "others",
-    headline: "More industries, the same connected platform.",
-    about: "Hospitality, field service, financial services, construction and other industries are on the roadmap. Each will reuse the same EVOQ products, tailored with industry-specific workflows.",
+  /* ---------- Industry solutions (headlines from the evoq.one industry pages) ---------- */
+
+  construction: {
+    id: "construction",
+    headline: "Site progress, client commitments and billing milestones in one view.",
+    about: "An industry solution for construction, engineering and real estate teams. It combines Projects, CRM, Inventory and Billing so site work, client commitments and milestone billing stay in step.",
     features: [
-      { title: "Industry workflows", body: "Each industry solution combines existing EVOQ products with the terminology and steps that industry expects." },
-      { title: "Shared data model", body: "Accounts, people and finance stay in step with the rest of the suite, no separate system to maintain." },
-      { title: "Built on what you have", body: "If CRM, Billing or ServiceOps are already installed, the industry layer builds on top rather than replacing them." },
+      { title: "Coordinate project work", body: "Phases, site tasks and owners in Projects, with progress visible to the office and the client." },
+      { title: "Support commercial processes", body: "Enquiries, tenders and contracts tracked in CRM from first contact to signed agreement." },
+      { title: "Materials on site", body: "Inventory tracks materials by site and location, with requests raised before work stalls." },
+      { title: "Milestone billing", body: "Invoices raised in Billing as each milestone is signed off, so cash follows progress." },
     ],
-    links: [{ label: "Website", href: "https://evoq.one/solutions" }],
-    gallery: drawn("Others", "Industries on the roadmap"),
-    window: { title: "Industries", subtitle: "4 on the roadmap", action: "Request an industry", nav: ["Overview", "Hospitality", "Financial services", "Construction"], layout: "list", rows: [
-      { title: "Hospitality, travel & F&B", meta: "Bookings + CRM + Billing", tag: "Planned" },
-      { title: "Field service, facilities & maintenance", meta: "ServiceOps + Inventory", tag: "Planned" },
-      { title: "Financial services", meta: "CRM + Billing + Desk", tag: "Planned" },
-      { title: "Construction, engineering & real estate", meta: "Projects + Inventory", tag: "Planned" },
+    links: [{ label: "Website", href: "https://evoq.one/solutions/construction-engineering-real-estate" }],
+    gallery: drawn("Construction", "Project milestones by site"),
+    window: { title: "Projects", subtitle: "9 active sites · 2 milestones due", action: "New project", nav: ["Overview", "Projects", "Sites", "Contracts", "Billing"], layout: "board", columns: [
+      { name: "Planning", items: [{ title: "Harbour View, Block C", meta: "Design review" }, { title: "Riverside offices", meta: "Permits" }] },
+      { name: "On site", items: [{ title: "Northgate warehouse", meta: "Steel frame", tag: "Milestone due", flag: true }, { title: "Lakeview villas", meta: "Foundations" }] },
+      { name: "Handover", items: [{ title: "Cedar Mall fit-out", meta: "Snagging" }] },
+      { name: "Billed", items: [{ title: "Pine St. clinic", meta: "Final invoice" }] },
     ] },
-    stats: [{ label: "Industries planned", value: "4" }, { label: "Shared products", value: "7" }, { label: "In development", value: "Manufacturing" }, { label: "Status", value: "Coming soon" }],
-    scene: { question: "Which industry comes next?", answer: "**Manufacturing** is next, followed by **Hospitality, travel & F&B**, based on current interest.", steps: [{ text: "Roadmap reviewed", done: true }, { text: "Priority list drafted", done: true }, { text: "Awaiting your input", done: false }] },
-    release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions" },
+    stats: [{ label: "Active sites", value: "9" }, { label: "Milestones due", value: "2" }, { label: "Billed this month", value: "$1.4M" }, { label: "On schedule", value: "78%" }],
+    scene: { question: "Which milestones can we bill this week?", answer: "**2 milestones** are ready for sign-off, worth **$318k**. Northgate warehouse steel frame is the largest.", steps: [{ text: "9 projects reviewed", done: true }, { text: "Milestone invoices drafted", done: true }, { text: "Awaiting your approval", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions/construction-engineering-real-estate" },
+  },
+
+  "field-service": {
+    id: "field-service",
+    headline: "Every request logged, every visit tracked, every asset maintained.",
+    about: "An industry solution for field service, facilities and maintenance teams. It brings together ServiceOps, Desk and Inventory so requests become scheduled visits and assets stay on their maintenance plans.",
+    features: [
+      { title: "Requests from every channel", body: "Calls, emails and portal requests land in one queue with the site and asset attached." },
+      { title: "Dispatch and visits", body: "Technicians scheduled by skill and zone, with checklists and sign-off on every visit." },
+      { title: "Assets and maintenance plans", body: "Recurring maintenance generated automatically for every asset, ahead of time." },
+      { title: "Parts in the van", body: "Inventory tracks stock by van and site, updated as parts are used on each job." },
+    ],
+    links: [{ label: "Website", href: "https://evoq.one/solutions/field-service-facilities-maintenance" }],
+    gallery: drawn("Field Service", "Today's visits and maintenance"),
+    window: { title: "Visits", subtitle: "Today · 24 visits · 3 at risk", action: "New request", nav: ["Requests", "Dispatch", "Visits", "Assets", "Reports"], layout: "list", rows: [
+      { title: "Chiller service, Harbor Dental", meta: "Planned maintenance · Ravi K.", value: "09:00", tag: "Scheduled" },
+      { title: "Lift fault, Cedar Mall", meta: "Reactive · unassigned", value: "ASAP", tag: "No technician", flag: true },
+      { title: "Fire panel test, Northgate Gym", meta: "Compliance · Maya S.", value: "11:30", tag: "Scheduled" },
+      { title: "Boiler repair, Lakeview Hotel", meta: "Reactive · Chris W.", value: "13:00", tag: "SLA in 2h", flag: true },
+      { title: "HVAC filter swap, Pine St. Clinic", meta: "Planned maintenance · Emily J.", value: "15:30", tag: "Scheduled" },
+    ] },
+    stats: [{ label: "Visits today", value: "24" }, { label: "Open requests", value: "31" }, { label: "PPM on time", value: "94%" }, { label: "First-time fix", value: "87%" }],
+    scene: { question: "Which visits are at risk today?", answer: "**3 visits** are at risk. The **Cedar Mall lift fault** has no technician and **Lakeview Hotel** is 2 hours from its SLA.", steps: [{ text: "24 visits checked", done: true }, { text: "Dispatch suggestion ready", done: true }, { text: "Awaiting your approval", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions/field-service-facilities-maintenance" },
+  },
+
+  hospitality: {
+    id: "hospitality",
+    headline: "Reservations confirmed, guest requests tracked, every stay billed.",
+    about: "An industry solution for hospitality, travel and food & beverage. It combines Bookings, CRM, Desk and Billing so reservations, guest requests and billing run from one place.",
+    features: [
+      { title: "Reservations", body: "Rooms, tables and experiences booked with live availability and instant confirmation." },
+      { title: "Guest requests", body: "Requests from every channel tracked through to done, with the guest's history to hand." },
+      { title: "Guest relationships", body: "Preferences and past stays in CRM, so returning guests are recognised." },
+      { title: "Billing that adds up", body: "Stays, extras and F&B charges on one bill, with payments taken at checkout." },
+    ],
+    links: [{ label: "Website", href: "https://evoq.one/solutions/hospitality-travel-food-and-beverage" }],
+    gallery: drawn("Hospitality", "Arrivals and guest requests"),
+    window: { title: "Arrivals", subtitle: "Today · 38 arrivals · 4 requests open", action: "New reservation", nav: ["Overview", "Reservations", "Guests", "Requests", "Billing"], layout: "list", rows: [
+      { title: "Sophia Hale · Room 204", meta: "2 nights · Deluxe king", value: "14:00", tag: "Confirmed" },
+      { title: "Daniel Cruz · Room 118", meta: "Early check-in requested", value: "11:00", tag: "Request open", flag: true },
+      { title: "Priya Nair · Table for 6", meta: "Restaurant · anniversary", value: "19:30", tag: "Confirmed" },
+      { title: "Noah Brooks · Suite 501", meta: "3 nights · airport transfer", value: "16:00", tag: "Transfer pending", flag: true },
+      { title: "Emily Carter · Room 310", meta: "1 night · returning guest", value: "18:00", tag: "Confirmed" },
+    ] },
+    stats: [{ label: "Arrivals today", value: "38" }, { label: "Occupancy", value: "86%" }, { label: "Open requests", value: "4" }, { label: "Guest rating", value: "4.8" }],
+    scene: { question: "Which arrivals need attention?", answer: "**2 arrivals** need attention: an **early check-in** for Room 118 and an **airport transfer** for Suite 501.", steps: [{ text: "38 arrivals reviewed", done: true }, { text: "Guest messages drafted", done: true }, { text: "Awaiting your approval", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions/hospitality-travel-food-and-beverage" },
+  },
+
+  "financial-services": {
+    id: "financial-services",
+    headline: "Client enquiries answered, service requests tracked, relationships kept current.",
+    about: "An industry solution for financial services firms. It combines CRM, Desk and Billing so client enquiries, service requests and follow-ups are handled on time and on record.",
+    features: [
+      { title: "Client relationships", body: "Every client, contact and conversation in CRM, with reviews and follow-ups scheduled." },
+      { title: "Service requests", body: "Requests tracked through Desk with SLAs and a full audit trail." },
+      { title: "Follow-ups that happen", body: "Reminders for reviews, renewals and outstanding documents, before they are late." },
+      { title: "Fees and billing", body: "Fees and recurring charges invoiced in Billing, linked to each client." },
+    ],
+    links: [{ label: "Website", href: "https://evoq.one/solutions/financial-services" }],
+    gallery: drawn("Financial Services", "Client service requests"),
+    window: { title: "Service requests", subtitle: "27 open · 3 near SLA", action: "New request", nav: ["Clients", "Requests", "Reviews", "Documents", "Billing"], layout: "board", columns: [
+      { name: "New", items: [{ title: "Address change", meta: "Acme Holdings" }, { title: "Statement copy", meta: "Halo Trust" }] },
+      { name: "In progress", items: [{ title: "Account transfer", meta: "Vertex Capital", tag: "Near SLA", flag: true }, { title: "Beneficiary update", meta: "Kite Family Office" }] },
+      { name: "Awaiting client", items: [{ title: "KYC documents", meta: "Orion Partners", tag: "Overdue", flag: true }] },
+      { name: "Resolved", items: [{ title: "Fee query", meta: "Summit Advisors" }] },
+    ] },
+    stats: [{ label: "Active clients", value: "412" }, { label: "Open requests", value: "27" }, { label: "Reviews due", value: "18" }, { label: "Within SLA", value: "95%" }],
+    scene: { question: "Which client reviews are due this month?", answer: "**18 reviews** are due. **6 clients** still have outstanding documents, led by **Orion Partners**.", steps: [{ text: "412 clients checked", done: true }, { text: "Reminders drafted", done: true }, { text: "Awaiting your approval", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["In development — coming soon"], changelogUrl: "https://evoq.one/solutions/financial-services" },
+  },
+
+  "all-industries": {
+    id: "all-industries",
+    headline: "Products that fit your industry's needs.",
+    about: "Every EVOQ industry solution in one place. Each one combines the same connected EVOQ products with the workflows and terminology that industry expects.",
+    features: [
+      { title: "Healthcare", body: "Patient relationships, practice management and patient engagement." },
+      { title: "Manufacturing", body: "From enquiry to the field: configure, quote, produce and service." },
+      { title: "Construction, field service and hospitality", body: "Site progress, maintenance visits, reservations and guest requests." },
+      { title: "Financial services", body: "Client enquiries, service requests and relationships kept current." },
+      { title: "One connected suite", body: "Every industry runs on the same EVOQ products, so data stays in step across teams." },
+    ],
+    links: [{ label: "Website", href: "https://evoq.one/industries" }],
+    gallery: drawn("All Industries", "EVOQ industry solutions"),
+    window: { title: "Industries", subtitle: "6 industry solutions", action: "Explore", nav: ["Overview", "Healthcare", "Manufacturing", "Field service", "Hospitality"], layout: "list", rows: [
+      { title: "Healthcare", meta: "CRM · Bookings · Billing", tag: "Available" },
+      { title: "Manufacturing", meta: "ConfigX · Inventory · ServiceOps", tag: "Coming soon" },
+      { title: "Construction, Engineering & Real Estate", meta: "Projects · Inventory · Billing", tag: "Coming soon" },
+      { title: "Field Service, Facilities & Maintenance", meta: "ServiceOps · Desk · Inventory", tag: "Coming soon" },
+      { title: "Hospitality, Travel & F&B", meta: "Bookings · CRM · Billing", tag: "Coming soon" },
+      { title: "Financial Services", meta: "CRM · Desk · Billing", tag: "Coming soon" },
+    ] },
+    stats: [{ label: "Industries", value: "6" }, { label: "Available now", value: "1" }, { label: "Shared products", value: "13" }, { label: "Coming soon", value: "5" }],
+    scene: { question: "Which industry solution fits a clinic group?", answer: "**Healthcare** fits best: it combines **CRM, Bookings and Billing** with patient relationship and practice management workflows.", steps: [{ text: "Industries compared", done: true }, { text: "Recommendation drafted", done: true }, { text: "Awaiting your review", done: false }] },
+    release: { platforms: PLATFORMS, changes: ["Browse every EVOQ industry solution"], changelogUrl: "https://evoq.one/industries" },
   },
 }

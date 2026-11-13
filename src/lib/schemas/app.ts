@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { industrySchema } from "@/lib/industries"
 
 export const appCategorySchema = z.enum(["Growth", "Operations", "People", "Finance", "Platform", "AI", "Solutions"])
 
@@ -23,7 +24,11 @@ export const launcherAppSchema = z.object({
   color: z.object({ primary: z.string(), logo: z.string() }),
   productUrl: z.url(),
   status: installStatusSchema,
+  /** The signed-in user's access: granted, requested (pending), or none. */
+  access: z.enum(["granted", "requested", "none"]).default("none"),
   agent: agentSchema.optional(),
+  /** Solution cards only: the industry this card belongs to (Industry solutions filter). */
+  industry: industrySchema.optional(),
   /** Extra apps reachable from the same card (e.g. Healthcare's PMS alongside its platform). */
   extraLinks: z.array(z.object({ label: z.string(), href: z.url() })).optional(),
 })

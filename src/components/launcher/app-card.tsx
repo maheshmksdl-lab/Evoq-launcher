@@ -65,24 +65,17 @@ export function AppCard({ app, selected, onSelect }: Props) {
                   {app.name}
                 </button>
               </h2>
-              <span className="label-mono border-evoq-tint text-evoq-interactive dark:border-evoq-mid dark:text-evoq-tint border px-1.5 py-0.5 text-[9px] leading-none">
-                By EVOQ
-              </span>
             </div>
             <p className="text-muted-foreground mt-1 truncate text-sm">{app.tagline}</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <StatusChip status={app.status} />
+          <StatusChip app={app} />
           <AgentTag app={app} />
         </div>
 
         <dl className="text-evoq-body dark:text-muted-foreground flex flex-1 flex-col gap-1.5 text-[13px] leading-relaxed">
-          <div className="flex gap-1">
-            <dt>Download size:</dt>
-            <dd className="text-foreground/80">{app.sizeMb} MB</dd>
-          </div>
           <dd className="text-foreground/80 line-clamp-2">{app.description}</dd>
           <div className="text-evoq-subtle dark:text-muted-foreground/80 mt-auto flex gap-1">
             <dt>Last updated:</dt>

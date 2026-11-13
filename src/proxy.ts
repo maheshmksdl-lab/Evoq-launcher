@@ -32,12 +32,12 @@ export async function proxy(request: NextRequest) {
     const session = await getAdminSession(request.headers)
 
     if (ADMIN_PUBLIC_PAGES.has(pathname)) {
-      if (session && pathname === "/admin/login") return redirect(request, session.mfaEnabled ? "/admin" : "/admin/mfa")
+      if (session && pathname === "/admin/login") return redirect(request, session.mfaOk ? "/admin" : "/admin/mfa")
       return NextResponse.next()
     }
     if (pathname.startsWith("/admin/api/")) return session ? NextResponse.next() : unauthorized("Admin sign-in required.")
     if (!session) return redirect(request, "/admin/login", pathname)
-    if (!session.mfaEnabled && pathname !== "/admin/mfa") return redirect(request, "/admin/mfa")
+    if (!session.mfaOk && pathname !== "/admin/mfa") return redirect(request, "/admin/mfa")
     return NextResponse.next()
   }
 

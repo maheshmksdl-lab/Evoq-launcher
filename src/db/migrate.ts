@@ -4,6 +4,7 @@ import { migrate as migrateNeon } from "drizzle-orm/neon-http/migrator"
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator"
 import { DEFAULT_ROLE_PERMISSIONS } from "@/lib/permissions"
 import { catalogDefaults } from "@/lib/data/apps"
+import { seedDevAccounts } from "./dev-seed"
 import { getDb, schema } from "./index"
 
 const globalForMigrate = globalThis as unknown as { evoqMigrated?: Promise<void> }
@@ -26,6 +27,9 @@ export function ensureDatabase(): Promise<void> {
     const rows = Object.entries(DEFAULT_ROLE_PERMISSIONS).flatMap(([role, perms]) => perms.map((permission) => ({ role, permission })))
     const existing = await db.select({ n: sql<number>`count(*)` }).from(schema.rolePermissions)
     if (Number(existing[0]?.n ?? 0) === 0) await db.insert(schema.rolePermissions).values(rows)
+
+    // Local development only (no-op in production): test accounts for sign-in checks.
+    await seedDevAccounts()
   })().catch((err) => {
     globalForMigrate.evoqMigrated = undefined
     throw err

@@ -1,11 +1,13 @@
 "use client"
 
-import { ArrowUpRight, Info, Loader2, MoreHorizontal } from "lucide-react"
+import { useState } from "react"
+import { ArrowUpRight, Info, KeyRound, Loader2, MoreHorizontal } from "lucide-react"
 import { toast } from "sonner"
 import { useRequestAccess } from "@/lib/queries/apps"
 import type { LauncherApp } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { copyPassword, copyUsername, SavedLoginDialog, useSavedLogin } from "./saved-login"
 
 type Props = { app: LauncherApp; compact?: boolean; onDetails?: () => void }
 
@@ -17,10 +19,26 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
   const open = canOpenApp(app)
   const comingSoon = app.status === "coming-soon"
   const requested = app.access === "requested"
+  const saved = useSavedLogin(app.id)
+  const [loginOpen, setLoginOpen] = useState(false)
 
   function onPrimary() {
     if (open) {
       window.open(app.productUrl, "_blank", "noopener,noreferrer")
+      // One-click copy of the saved login, ready for the app's sign-in page.
+      if (saved) {
+        toast(`Opening ${app.name}`, {
+          description: `Saved login: ${saved.username}`,
+          duration: 15_000,
+          cancel: { label: "Copy username", onClick: () => void copyUsername(saved.username) },
+          action: {
+            label: "Copy password",
+            onClick: async () => {
+              if ((await copyPassword(app.id)) === "locked") setLoginOpen(true)
+            },
+          },
+        })
+      }
       return
     }
     mutation.mutate(undefined, {
@@ -63,6 +81,12 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
               App details
             </DropdownMenuItem>
           )}
+          {app.access === "granted" && !comingSoon && (
+            <DropdownMenuItem onClick={() => setLoginOpen(true)}>
+              <KeyRound />
+              {saved ? "Saved login" : "Save login"}
+            </DropdownMenuItem>
+          )}
           {open && (
             <DropdownMenuItem onClick={() => window.open(app.productUrl, "_blank", "noopener,noreferrer")}>
               <ArrowUpRight />
@@ -78,6 +102,7 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
             ))}
         </DropdownMenuContent>
       </DropdownMenu>
+      <SavedLoginDialog app={app} open={loginOpen} onOpenChange={setLoginOpen} />
     </div>
   )
 }

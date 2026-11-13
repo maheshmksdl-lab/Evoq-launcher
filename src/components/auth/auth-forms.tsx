@@ -85,8 +85,20 @@ export function SignInForm({ realm }: { realm: Realm }) {
 
   async function submitCode(e: FormEvent) {
     e.preventDefault()
-    setPending(true)
     setError(null)
+    if (!useBackup) {
+      // Catch the common mistake before it reaches the server: typing the long
+      // setup key (or anything that isn't 6 digits) instead of the app's code.
+      const digits = code.replace(/\s/g, "")
+      if (!/^\d{6}$/.test(digits)) {
+        return setError(
+          digits.length > 8 || /[a-z]/i.test(digits)
+            ? "That looks like the setup key. Enter the 6-digit code your authenticator app is showing right now."
+            : "Enter the 6 digits shown in your authenticator app.",
+        )
+      }
+    }
+    setPending(true)
     const c = client(realm)
     const res = useBackup
       ? await c.twoFactor.verifyBackupCode({ code: code.trim() })
@@ -100,13 +112,15 @@ export function SignInForm({ realm }: { realm: Realm }) {
     return (
       <form onSubmit={submitCode} className="flex flex-col gap-4" noValidate>
         <p className="text-muted-foreground text-sm">
-          {useBackup ? "Enter one of your backup codes." : "Enter the 6-digit code from your authenticator app."}
+          {useBackup ? "Enter one of your backup codes." : "Enter the 6-digit code from your authenticator app. It changes every 30 seconds."}
         </p>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="code">{useBackup ? "Backup code" : "Authentication code"}</Label>
           <Input
             id="code"
             inputMode={useBackup ? "text" : "numeric"}
+            maxLength={useBackup ? 40 : 12}
+            placeholder={useBackup ? "" : "123456"}
             autoComplete="one-time-code"
             autoFocus
             value={code}

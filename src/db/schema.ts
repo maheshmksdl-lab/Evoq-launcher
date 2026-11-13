@@ -176,6 +176,27 @@ export const accessRequests = pgTable(
   (t) => [index("access_request_status_idx").on(t.status)],
 )
 
+/* ---------- Saved logins (a user's logins for other apps) ---------- */
+
+/**
+ * One saved login per user per app. The password is AES-256-GCM encrypted with a
+ * key derived per user and app (see lib/vault.ts); the username is plain text so
+ * it can be listed and copied without unlocking.
+ */
+export const savedLogins = pgTable(
+  "saved_login",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.user.id, { onDelete: "cascade" }),
+    appId: text().notNull(),
+    username: text().notNull(),
+    passwordEnc: text().notNull(),
+    updatedAt: now(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.appId] })],
+)
+
 /* ---------- Activity ---------- */
 
 export const loginEvents = pgTable(

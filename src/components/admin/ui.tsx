@@ -219,4 +219,5 @@ export const REASONS: Record<string, string> = {
   unknown_account: "Unknown account",
   inactive: "Account deactivated",
   locked_out: "Locked out",
+  reauth_failed: "Wrong password (saved logins)",
 }

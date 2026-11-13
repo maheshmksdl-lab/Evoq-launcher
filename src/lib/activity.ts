@@ -1,5 +1,5 @@
 import "server-only"
-import { and, count, eq, gte } from "drizzle-orm"
+import { and, count, eq, gte, isNull, ne, or } from "drizzle-orm"
 import { getDb, schema } from "@/db"
 import { getSetting } from "@/lib/settings"
 
@@ -21,7 +21,12 @@ export async function recordLogin(e: {
     .values({ id: crypto.randomUUID(), ...e, email: e.email.toLowerCase(), userId: e.userId ?? null, reason: e.reason ?? null })
 }
 
-/** True when this email has too many failed attempts inside the lockout window. */
+/**
+ * True when this email has too many failed attempts inside the lockout window.
+ * Attempts refused *because* of the lockout ("locked_out") are logged for the
+ * audit trail but don't count, so retrying can't extend the lockout forever:
+ * it ends lockoutMinutes after the last real failed attempt.
+ */
 export async function isLockedOut(realm: Realm, email: string) {
   const { lockoutThreshold, lockoutMinutes } = await getSetting("security")
   const since = new Date(Date.now() - lockoutMinutes * 60 * 1000)
@@ -33,6 +38,7 @@ export async function isLockedOut(realm: Realm, email: string) {
         eq(schema.loginEvents.realm, realm),
         eq(schema.loginEvents.email, email.toLowerCase()),
         eq(schema.loginEvents.success, false),
+        or(isNull(schema.loginEvents.reason), ne(schema.loginEvents.reason, "locked_out")),
         gte(schema.loginEvents.createdAt, since),
       ),
     )

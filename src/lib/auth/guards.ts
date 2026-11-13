@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm"
 import { headers as nextHeaders } from "next/headers"
 import { connection } from "next/server"
 import { getDb, schema } from "@/db"
+import { devAdminMfaOptional } from "@/lib/dev-flags"
 import { ALL_PERMISSIONS, isAdminRole, type AdminRole, type Permission } from "@/lib/permissions"
 import { SESSION_POLICY } from "@/lib/settings"
 import { getAdminAuth, getUserAuth } from "./instances"
@@ -73,17 +74,20 @@ export async function getAdminSession(h?: Headers) {
     ...result,
     admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role as AdminRole },
     mfaEnabled: Boolean(admin.twoFactorEnabled),
+    /** Two-factor requirement satisfied: enrolled, or (local development only) made optional. */
+    mfaOk: Boolean(admin.twoFactorEnabled) || devAdminMfaOptional(),
   }
 }
 
 /**
- * Requires a signed-in admin with MFA set up, and (optionally) a permission.
+ * Requires a signed-in admin with MFA set up (unless the local-development switch
+ * makes it optional), and (optionally) a permission.
  * Admins who haven't enrolled MFA yet can only reach the MFA setup endpoints.
  */
 export async function requireAdmin(permission?: Permission) {
   const s = await getAdminSession()
   if (!s) throw new HttpError(401, "Admin sign-in required.")
-  if (!s.mfaEnabled) throw new HttpError(403, "Set up two-factor authentication to continue.")
+  if (!s.mfaOk) throw new HttpError(403, "Set up two-factor authentication to continue.")
   const permissions = await permissionsForRole(s.admin.role)
   if (permission && !permissions.includes(permission)) throw new HttpError(403, "You don't have permission to do this.")
   return { ...s, permissions }

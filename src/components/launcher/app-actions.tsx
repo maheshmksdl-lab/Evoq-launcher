@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 const primaryLabel = {
-  available: "Launch",
+  available: "Subscribe",
   installed: "Open",
   update: "Update",
   "coming-soon": "Coming soon",
@@ -25,13 +25,13 @@ type Props = { app: LauncherApp; compact?: boolean; onDetails?: () => void }
 export function AppActions({ app, compact = false, onDetails }: Props) {
   const mutation = useInstallApp(app)
   const busy = mutation.isPending
-  const removing = busy && mutation.variables === "uninstall"
-  const canUninstall = app.status === "installed" || app.status === "update"
+  const unsubscribing = busy && mutation.variables === "uninstall"
+  const canUnsubscribe = app.status === "installed" || app.status === "update"
 
   function run(action: "install" | "uninstall") {
     mutation.mutate(action, {
       onSuccess: (a) =>
-        toast.success(action === "install" ? `${a.name} ${app.status === "update" ? "updated" : "installed"}` : `${a.name} removed`),
+        toast.success(action === "install" ? `${a.name} ${app.status === "update" ? "updated" : "subscribed"}` : `${a.name} unsubscribed`),
       onError: (err) => toast.error(`${app.name}: ${err.message}`),
     })
   }
@@ -59,7 +59,7 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
         )}
       >
         {busy && <Loader2 className="size-3.5 animate-spin" />}
-        {busy ? (removing ? "Removing" : app.status === "update" ? "Updating" : "Launching") : primaryLabel[app.status]}
+        {busy ? (unsubscribing ? "Unsubscribing" : app.status === "update" ? "Updating" : "Subscribing") : primaryLabel[app.status]}
       </button>
 
       <DropdownMenu>
@@ -89,12 +89,12 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
                 {l.label}
               </DropdownMenuItem>
             ))}
-          {canUninstall && (
+          {canUnsubscribe && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" disabled={busy} onClick={() => run("uninstall")}>
                 <Trash2 />
-                Uninstall
+                Unsubscribe
               </DropdownMenuItem>
             </>
           )}

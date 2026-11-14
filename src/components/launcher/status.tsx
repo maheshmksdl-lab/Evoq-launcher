@@ -3,11 +3,11 @@ import { cn } from "@/lib/utils"
 
 const statusStyle: Record<InstallStatus, { label: string; className: string }> = {
   available: {
-    label: "Available to Launch",
+    label: "Unsubscribed",
     className: "border-evoq-tint bg-evoq-soft text-evoq-interactive dark:border-evoq-mid/60 dark:bg-evoq-indigo/30 dark:text-evoq-tint",
   },
   installed: {
-    label: "Installed",
+    label: "Subscribed",
     className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
   },
   update: {

@@ -1,0 +1,10 @@
+import type { Metadata } from "next"
+import { SettingsPage } from "@/components/settings/settings-page"
+
+export const metadata: Metadata = {
+  title: "Application settings | EVOQ Launcher",
+}
+
+export default function Page() {
+  return <SettingsPage />
+}

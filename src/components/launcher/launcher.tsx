@@ -1,9 +1,9 @@
 "use client"
 
 import { useDeferredValue, useMemo, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { SearchX } from "lucide-react"
-import { appsQuery } from "@/lib/queries/apps"
+import { industries, INDUSTRY_APPS, industryLabel, type IndustryFilter } from "@/lib/industries"
+import { useManagedApps } from "@/lib/queries/apps"
 import type { LauncherApp, SortKey } from "@/lib/schemas/app"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AppCard } from "./app-card"
@@ -16,17 +16,23 @@ const sorters: Record<SortKey, (a: LauncherApp, b: LauncherApp) => number> = {
   "name-asc": (a, b) => a.name.localeCompare(b.name),
   "name-desc": (a, b) => b.name.localeCompare(a.name),
   updated: (a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.name.localeCompare(b.name),
-  size: (a, b) => b.sizeMb - a.sizeMb,
   category: (a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name),
 }
 
 const gridCols = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 
 export function Launcher() {
-  const { data, isPending, isFetching, error, refetch } = useQuery(appsQuery)
+  const { data, isPending, isFetching, error, localError, refetch, refreshLocalState } = useManagedApps()
   const [sort, setSort] = useState<SortKey>("name-asc")
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState<CategoryFilterValue>("All")
+  const [industry, setIndustry] = useState<IndustryFilter | null>(null)
+  const filterLabel = [
+    category !== "All" ? category : undefined,
+    industry && industry !== "all" ? industryLabel(industry) : undefined,
+  ]
+    .filter((label): label is string => Boolean(label))
+    .join(" / ") || (industry === "all" ? industryLabel(industry) : category)
   const [view, setView] = useState<"grid" | "list">("grid")
   const [selected, setSelected] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
@@ -43,20 +49,33 @@ export function Launcher() {
     const list = all.filter(
       (a) =>
         (category === "All" || a.category === category) &&
+        (!industry || industry === "all" || INDUSTRY_APPS[industry].includes(a.id)) &&
         (!q ||
           [a.name, a.tagline, a.description, a.category, a.agent?.name ?? "", a.agent?.role ?? ""].some((f) => f.toLowerCase().includes(q))),
     )
     return list.sort(sorters[sort])
-  }, [all, query, sort, category])
+  }, [all, query, sort, category, industry])
 
   const categoryCounts = useMemo(() => {
-    const counts: Record<CategoryFilterValue, number> = { All: all.length, Growth: 0, Operations: 0, People: 0, Finance: 0, Platform: 0, AI: 0, Solutions: 0 }
-    for (const a of all) counts[a.category]++
+    const counts: Record<CategoryFilterValue, number> = { All: all.length, Growth: 0, Operations: 0, People: 0, Finance: 0, Platform: 0, AI: 0 }
+    for (const a of all) {
+      if (a.category !== "Solutions") counts[a.category]++
+    }
     return counts
   }, [all])
 
-  const installed = all.filter((a) => a.status === "installed" || a.status === "update").length
+  const industryCounts = useMemo(() => {
+    const ids = new Set(all.map((app) => app.id))
+    const counts = Object.fromEntries(
+      industries.map(({ id }) => [id, INDUSTRY_APPS[id].filter((appId) => ids.has(appId)).length]),
+    ) as Record<IndustryFilter, number>
+    counts.all = all.length
+    return counts
+  }, [all])
+
+  const subscribed = all.filter((a) => a.status === "installed" || a.status === "update").length
   const updates = all.filter((a) => a.status === "update").length
+  const catalogError = error ?? localError
 
   return (
     <div className="flex h-dvh flex-col">
@@ -73,13 +92,24 @@ export function Launcher() {
         refreshing={isFetching}
       />
 
-      <CategoryFilter value={category} onChange={setCategory} counts={categoryCounts} />
+      <CategoryFilter
+        value={category}
+        onChange={setCategory}
+        counts={categoryCounts}
+        industry={industry}
+        onIndustryChange={setIndustry}
+        industryCounts={industryCounts}
+      />
 
       <main className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
-        {error ? (
+        {catalogError ? (
           <div className="flex flex-col items-start gap-3 border p-6 text-sm">
-            <p className="text-destructive">{error.message}</p>
-            <button type="button" onClick={() => refetch()} className="label-mono bg-primary text-primary-foreground h-9 px-4">
+            <p className="text-destructive">{catalogError.message}</p>
+            <button
+              type="button"
+              onClick={() => (localError ? refreshLocalState() : refetch())}
+              className="label-mono bg-primary text-primary-foreground h-9 px-4"
+            >
               Try again
             </button>
           </div>
@@ -104,9 +134,9 @@ export function Launcher() {
           <div className="text-muted-foreground flex flex-col items-center gap-2 border py-20 text-sm">
             <SearchX className="size-6" />
             {search ? (
-              <>No apps match &quot;{search}&quot;{category !== "All" && <> in {category}</>}.</>
+              <>No apps match &quot;{search}&quot;{filterLabel !== "All" && <> in {filterLabel}</>}.</>
             ) : (
-              <>No apps in {category}.</>
+              <>No apps in {filterLabel}.</>
             )}
           </div>
         ) : view === "grid" ? (
@@ -121,7 +151,6 @@ export function Launcher() {
               <span role="columnheader">App</span>
               <span role="columnheader" className="hidden md:block">Category</span>
               <span role="columnheader" className="hidden md:block">Version</span>
-              <span role="columnheader" className="hidden md:block">Size</span>
               <span role="columnheader" className="hidden md:block">Updated</span>
               <span role="columnheader" className="hidden md:block">AI agent</span>
               <span role="columnheader" className="sr-only">Actions</span>
@@ -135,7 +164,7 @@ export function Launcher() {
 
       <AppDetailsDialog apps={apps} openId={openId} onOpenChange={openDetails} />
 
-      <StatusBar checkedAt={data?.checkedAt} total={all.length} installed={installed} updates={updates} />
+      <StatusBar checkedAt={data?.checkedAt} total={all.length} subscribed={subscribed} updates={updates} />
     </div>
   )
 }

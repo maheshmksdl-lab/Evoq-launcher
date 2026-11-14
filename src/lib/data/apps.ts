@@ -33,10 +33,9 @@ const catalog: Omit<LauncherApp, "status">[] = [
   { id: "sync", name: "Sync", tagline: "Integrations", description: "Keep EVOQ products and your existing systems in step.", category: "Platform", version: "1.9.2", sizeMb: 36, updatedAt: "2026-11-04", icon: "/logos/sync.svg", color: { primary: "#049669", logo: "#049669" }, productUrl: "https://sync-app-weld.vercel.app/", agent: AGENTS.leo },
   { id: "ai", name: "EVOQ AI", tagline: "AI across the suite", description: "Ask EVI, assign work to agents, or let AI run in the background.", category: "AI", version: "0.9.0", sizeMb: 124, updatedAt: "2026-11-12", icon: "/logos/ai.svg", color: { primary: "#0062FA", logo: "#0062FA" }, productUrl: "https://evoq-ai-app.vercel.app/", agent: AGENTS.evi },
 
-  // Solutions: industry bundles across the product suite, rather than single products.
-  { id: "healthcare", name: "Healthcare", tagline: "Clinical & patient operations", description: "A unified healthcare platform and practice management system, from patient records to billing.", category: "Solutions", version: "1.0.0", sizeMb: 92, updatedAt: "2026-11-12", icon: "/logos/healthcare.svg", color: { primary: "#0E7490", logo: "#0E7490" }, productUrl: "https://healthcare-unified-platform.vercel.app/", extraLinks: [{ label: "Healthcare PMS", href: "https://healthcare-pms.vercel.app/" }] },
-  { id: "manufacturing", name: "Manufacturing", tagline: "Production & shop floor", description: "Production orders, shop-floor tracking and quality control, built for manufacturers.", category: "Solutions", version: "0.1.0", sizeMb: 58, updatedAt: "2026-10-01", icon: "/logos/manufacturing.svg", color: { primary: "#C2410C", logo: "#C2410C" }, productUrl: "https://evoq.one/solutions/manufacturing" },
-  { id: "others", name: "Others", tagline: "More industries", description: "Hospitality, field service, financial services, construction and more, tailored across industries.", category: "Solutions", version: "0.1.0", sizeMb: 12, updatedAt: "2026-10-01", icon: "/logos/others.svg", color: { primary: "#475569", logo: "#475569" }, productUrl: "https://evoq.one/solutions" },
+  // Healthcare products are separate cards so each app can be filtered and opened directly.
+  { id: "healthcare", name: "Unified Healthcare Platform", tagline: "Clinical & patient operations", description: "Patient records, scheduling, admissions and care coordination in one platform.", category: "Solutions", version: "1.0.0", sizeMb: 92, updatedAt: "2026-11-12", icon: "/logos/healthcare.svg", color: { primary: "#0E7490", logo: "#0E7490" }, productUrl: "https://healthcare-unified-platform.vercel.app/" },
+  { id: "healthcare-pms", name: "Healthcare PMS", tagline: "Practice management", description: "Front desk, appointments, billing and claims for healthcare practices.", category: "Solutions", version: "1.0.0", sizeMb: 64, updatedAt: "2026-11-12", icon: "/logos/healthcare.svg", color: { primary: "#0E7490", logo: "#0E7490" }, productUrl: "https://healthcare-pms.vercel.app/" },
 ]
 
 /*
@@ -49,8 +48,8 @@ const initialStatus: Record<string, InstallStatus> = {
   ai: "installed",
   configx: "coming-soon",
   skillberry: "coming-soon",
-  manufacturing: "coming-soon",
-  others: "coming-soon",
+  healthcare: "installed",
+  "healthcare-pms": "installed",
 }
 
 const state = new Map<string, InstallStatus>(

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Globe, LayoutGrid, List, LogOut, Moon, RotateCw, Search, Settings, Sun } from "lucide-react"
+import Link from "next/link"
+import { CircleUserRound, Globe, LayoutGrid, List, LogOut, Moon, RotateCw, Search, Settings, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { sortOptions, sortSchema, type SortKey } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const iconBtn =
   "text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring/60 inline-flex items-center justify-center transition-colors outline-none focus-visible:ring-3 focus-visible:ring-inset"
@@ -35,23 +35,14 @@ export function TitleBar() {
       </div>
 
       <div className="ml-auto flex items-stretch">
-        <Tooltip>
-          <TooltipTrigger
-            render={<div />}
-            className="hidden items-center gap-2 border-l px-4 text-xs sm:flex"
-          >
-            <span className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/characters/evi.webp" alt="" width={24} height={24} className="ring-evoq-tint size-6 rounded-full object-cover ring-2" />
-              <span className="border-surface absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 bg-emerald-500" />
-            </span>
-            <span>
-              <span className="font-semibold">EVI</span>
-              <span className="text-muted-foreground"> · ready</span>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">EVI, the EVOQ AI assistant, works inside every installed app.</TooltipContent>
-        </Tooltip>
+        <Link
+          href="/profile"
+          aria-label="Profile settings"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-2 border-l px-3 text-xs transition-colors sm:px-4"
+        >
+          <CircleUserRound className="size-5" />
+          <span className="hidden sm:inline">Profile</span>
+        </Link>
 
         <button
           type="button"
@@ -62,9 +53,9 @@ export function TitleBar() {
           <Sun className="size-4 dark:hidden" />
           <Moon className="hidden size-4 dark:block" />
         </button>
-        <a href="https://evoq.one" target="_blank" rel="noopener noreferrer" aria-label="Settings and account on evoq.one" className={cn(iconBtn, "w-12 border-l")}>
+        <Link href="/settings" aria-label="Application settings" title="Application settings" className={cn(iconBtn, "w-12 border-l")}>
           <Settings className="size-4" />
-        </a>
+        </Link>
         <button type="button" aria-label="Log out" onClick={onLogout} className={cn(iconBtn, "w-12 border-l")}>
           <LogOut className="size-4" />
         </button>
@@ -186,7 +177,7 @@ function useRelativeTime(iso?: string) {
   return `${hrs} hr${hrs > 1 ? "s" : ""} ago`
 }
 
-export function StatusBar({ checkedAt, total, installed, updates }: { checkedAt?: string; total: number; installed: number; updates: number }) {
+export function StatusBar({ checkedAt, total, subscribed, updates }: { checkedAt?: string; total: number; subscribed: number; updates: number }) {
   const ago = useRelativeTime(checkedAt)
   return (
     <footer className="bg-surface label-mono text-muted-foreground flex h-9 shrink-0 items-center gap-4 border-t px-5 text-[10px]">
@@ -196,7 +187,7 @@ export function StatusBar({ checkedAt, total, installed, updates }: { checkedAt?
       <span className="ml-auto hidden items-center gap-3 sm:flex">
         <span>{total} apps</span>
         <span aria-hidden>·</span>
-        <span>{installed} installed</span>
+        <span>{subscribed} subscribed</span>
         {updates > 0 && (
           <>
             <span aria-hidden>·</span>

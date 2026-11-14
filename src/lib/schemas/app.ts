@@ -24,7 +24,7 @@ export const launcherAppSchema = z.object({
   productUrl: z.url(),
   status: installStatusSchema,
   agent: agentSchema.optional(),
-  /** Extra apps reachable from the same card (e.g. Healthcare's PMS alongside its platform). */
+  /** Supplementary links shown alongside the primary app action. */
   extraLinks: z.array(z.object({ label: z.string(), href: z.url() })).optional(),
 })
 
@@ -98,9 +98,8 @@ export const sortOptions = [
   { value: "name-asc", label: "Name (A–Z)" },
   { value: "name-desc", label: "Name (Z–A)" },
   { value: "updated", label: "Recently updated" },
-  { value: "size", label: "Download size" },
   { value: "category", label: "Category" },
 ] as const
 
-export const sortSchema = z.enum(["name-asc", "name-desc", "updated", "size", "category"])
+export const sortSchema = z.enum(["name-asc", "name-desc", "updated", "category"])
 export type SortKey = z.infer<typeof sortSchema>

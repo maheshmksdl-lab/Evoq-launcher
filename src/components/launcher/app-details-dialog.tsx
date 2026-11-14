@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { useQuery } from "@tanstack/react-query"
 import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { appDetailsQuery } from "@/lib/queries/apps"
+import { LOCAL_APP_ID_PREFIX } from "@/lib/local-app-cards"
 import type { AppDetails, GallerySlide, LauncherApp } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -76,7 +77,52 @@ export function AppDetailsDialog({ apps, openId, onOpenChange }: Props) {
 type BodyProps = { app: LauncherApp; position: string; onPrev?: () => void; onNext?: () => void }
 
 function DetailsBody({ app, position, onPrev, onNext }: BodyProps) {
-  const { data: details, error, refetch } = useQuery(appDetailsQuery(app.id))
+  const isLocallyAdded = app.id.startsWith(LOCAL_APP_ID_PREFIX)
+  const detailsQuery = useQuery({ ...appDetailsQuery(app.id), enabled: !isLocallyAdded })
+  const details = isLocallyAdded ? localAppDetails(app) : detailsQuery.data
+  const error = isLocallyAdded ? null : detailsQuery.error
+
+  function localAppDetails(localApp: LauncherApp): AppDetails {
+    return {
+      id: localApp.id,
+      headline: localApp.tagline,
+      about: localApp.description,
+      features: [
+        { title: "Application card", body: `${localApp.name} is configured in this launcher.` },
+        { title: "Category", body: `This app is listed under ${localApp.category}.` },
+        { title: "Open app", body: "Use the application link to open the configured destination." },
+      ],
+      links: [{ label: "Open app", href: localApp.productUrl }],
+      gallery: [{ kind: "overview", caption: `${localApp.name} application overview` }],
+      window: {
+        title: localApp.name,
+        subtitle: localApp.tagline,
+        action: "Open app",
+        nav: ["Overview", "Details", "Settings"],
+        layout: "list",
+        rows: [
+          { title: localApp.name, meta: localApp.category, tag: `Version ${localApp.version}` },
+        ],
+        columns: [],
+      },
+      stats: [
+        { label: "Category", value: localApp.category },
+        { label: "Version", value: localApp.version },
+        { label: "Status", value: localApp.status === "installed" || localApp.status === "update" ? "Subscribed" : "Unsubscribed" },
+        { label: "Platform", value: "Web" },
+      ],
+      scene: {
+        question: `What is ${localApp.name}?`,
+        answer: localApp.description,
+        steps: [
+          { text: "Card configured", done: true },
+          { text: "App details available", done: true },
+          { text: "Open app when ready", done: false },
+        ],
+      },
+      release: { platforms: ["Web"], changes: ["Application card configured in launcher settings"], changelogUrl: localApp.productUrl },
+    }
+  }
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
@@ -153,7 +199,7 @@ function DetailsBody({ app, position, onPrev, onNext }: BodyProps) {
       {error ? (
         <div className="flex items-center gap-3 p-6 text-sm">
           <p className="text-destructive">{error.message}</p>
-          <button type="button" onClick={() => refetch()} className="label-mono bg-primary text-primary-foreground h-9 px-4">
+          <button type="button" onClick={() => detailsQuery.refetch()} className="label-mono bg-primary text-primary-foreground h-9 px-4">
             Try again
           </button>
         </div>
@@ -192,11 +238,10 @@ function DetailsBody({ app, position, onPrev, onNext }: BodyProps) {
 
           <section aria-labelledby="release-heading" className="mt-10 border-t pt-8">
             <h3 id="release-heading">{sectionLabel("02", "Latest release")}</h3>
-            <dl className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+            <dl className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-3">
               {[
                 ["Version", app.version],
                 ["Released", formatDate(app.updatedAt)],
-                ["Download", `${app.sizeMb} MB`],
                 ["Platforms", details.release.platforms.join(", ")],
               ].map(([k, v]) => (
                 <div key={k} className="bg-surface border px-4 py-3">

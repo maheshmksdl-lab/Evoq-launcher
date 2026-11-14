@@ -1,5 +1,18 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
+"use client"
+
+import { useCallback, useMemo, useSyncExternalStore } from "react"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
+import {
+  getLocalAppCardSnapshot,
+  getServerLocalAppCardSnapshot,
+  LOCAL_APP_ID_PREFIX,
+  mergeLocalAppCards,
+  refreshLocalAppCards,
+  subscribeToLocalAppCards,
+  setLocalAppStatus,
+  writeLocalAppCardState,
+} from "@/lib/local-app-cards"
 import {
   appDetailsResponseSchema,
   launcherAppListSchema,
@@ -12,6 +25,33 @@ const appsResponseSchema = z.object({
   apps: launcherAppListSchema,
 })
 export type AppsResponse = z.infer<typeof appsResponseSchema>
+
+export function useManagedApps() {
+  const query = useQuery(appsQuery)
+  const localSnapshot = useSyncExternalStore(
+    subscribeToLocalAppCards,
+    getLocalAppCardSnapshot,
+    getServerLocalAppCardSnapshot,
+  )
+
+  const saveLocalState = useCallback((next: Parameters<typeof writeLocalAppCardState>[0]) => {
+    writeLocalAppCardState(next)
+  }, [])
+
+  const data = useMemo(
+    () => query.data && { ...query.data, apps: mergeLocalAppCards(query.data.apps, localSnapshot.state) },
+    [query.data, localSnapshot.state],
+  )
+
+  return {
+    ...query,
+    data,
+    localState: localSnapshot.state,
+    localError: localSnapshot.error,
+    refreshLocalState: refreshLocalAppCards,
+    saveLocalState,
+  }
+}
 
 async function fetchApps() {
   const res = await fetch("/api/apps", { cache: "no-store" })
@@ -54,7 +94,10 @@ export function useInstallApp(app: LauncherApp) {
   const qc = useQueryClient()
   return useMutation({
     mutationKey: ["install", app.id],
-    mutationFn: (action: InstallAction) => runInstall({ id: app.id, action }),
+    mutationFn: async (action: InstallAction) =>
+      app.id.startsWith(LOCAL_APP_ID_PREFIX)
+        ? setLocalAppStatus(app.id, action === "install" ? "installed" : "available")
+        : runInstall({ id: app.id, action }),
     onSuccess: (updated) => {
       qc.setQueryData<AppsResponse>(appsQuery.queryKey, (prev) =>
         prev && { ...prev, apps: prev.apps.map((a) => (a.id === updated.id ? updated : a)) },

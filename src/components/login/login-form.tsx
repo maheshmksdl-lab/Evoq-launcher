@@ -50,7 +50,6 @@ export function LoginForm() {
           id="username"
           type="text"
           autoComplete="username"
-          placeholder="admin@evoq.one"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="h-10 rounded-none"
@@ -65,7 +64,6 @@ export function LoginForm() {
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
-            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="h-10 rounded-none pr-10"

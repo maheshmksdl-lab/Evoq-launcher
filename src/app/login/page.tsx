@@ -26,13 +26,6 @@ export default function LoginPage() {
               <LoginForm />
             </Suspense>
           </div>
-
-          <div className="border-t px-6 py-4">
-            <p className="label-mono text-muted-foreground mb-1.5 text-[10px]">Demo credentials</p>
-            <p className="text-foreground/80 text-xs">
-              Username <span className="font-mono">admin@evoq.one</span> · Password <span className="font-mono">Evoq@2026</span>
-            </p>
-          </div>
         </div>
 
         <p className="text-xs text-white/70">EVOQ Launcher · desktop-style access to every EVOQ product</p>

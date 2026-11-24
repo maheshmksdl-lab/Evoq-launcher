@@ -1,8 +1,11 @@
 "use client"
 
-import { ArrowUpRight, Info, Loader2, MoreHorizontal, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { ArrowUpRight, Eye, Info, KeyRound, Loader2, MoreHorizontal, Trash2, XCircle } from "lucide-react"
 import { toast } from "sonner"
+import { useAppCredentials, useCredentialsValue } from "@/lib/credentials"
 import { useInstallApp } from "@/lib/queries/apps"
+import { CredentialsDialog, type CredentialsMode } from "./credentials-dialog"
 import type { LauncherApp } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
 import {
@@ -27,6 +30,9 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
   const busy = mutation.isPending
   const unsubscribing = busy && mutation.variables === "uninstall"
   const canUnsubscribe = app.status === "installed" || app.status === "update"
+  const { hasCredentials, loading: credsLoading, save, remove } = useAppCredentials(app.id)
+  const [credMode, setCredMode] = useState<CredentialsMode | null>(null)
+  const stored = useCredentialsValue(app.id, credMode !== null && hasCredentials)
 
   function run(action: "install" | "uninstall") {
     mutation.mutate(action, {
@@ -89,6 +95,31 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
                 {l.label}
               </DropdownMenuItem>
             ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem disabled={credsLoading} onClick={() => setCredMode("edit")}>
+            <KeyRound />
+            {hasCredentials ? "Edit credentials" : "Save credentials"}
+          </DropdownMenuItem>
+          {hasCredentials && (
+            <>
+              <DropdownMenuItem onClick={() => setCredMode("view")}>
+                <Eye />
+                View credentials
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={remove.isPending}
+                onClick={() =>
+                  remove.mutate(undefined, {
+                    onSuccess: () => toast.success(`${app.name} credentials removed`),
+                    onError: (err) => toast.error(`${app.name}: ${err.message}`),
+                  })
+                }
+              >
+                <XCircle />
+                Remove credentials
+              </DropdownMenuItem>
+            </>
+          )}
           {canUnsubscribe && (
             <>
               <DropdownMenuSeparator />
@@ -100,6 +131,29 @@ export function AppActions({ app, compact = false, onDetails }: Props) {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {credMode && (
+        <CredentialsDialog
+          appName={app.name}
+          mode={credMode}
+          hasCredentials={hasCredentials}
+          credentials={stored.data ?? null}
+          loading={stored.isPending && hasCredentials}
+          loadError={stored.error?.message ?? null}
+          saving={save.isPending}
+          onModeChange={setCredMode}
+          onSave={(value) =>
+            save.mutate(value, {
+              onSuccess: () => {
+                toast.success(`${app.name} credentials saved`)
+                setCredMode(null)
+              },
+              onError: (err) => toast.error(`${app.name}: ${err.message}`),
+            })
+          }
+          onClose={() => setCredMode(null)}
+        />
+      )}
     </div>
   )
 }

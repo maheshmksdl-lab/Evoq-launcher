@@ -1,6 +1,5 @@
 "use client"
 
-import { ArrowUpRight } from "lucide-react"
 import type { LauncherApp } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
 import { AppActions } from "./app-actions"
@@ -33,18 +32,8 @@ export function AppCard({ app, selected, onSelect }: Props) {
         <span className={cn("label-mono", selected ? "text-evoq-interactive dark:text-evoq-bright" : "text-muted-foreground")}>
           V{app.version}
         </span>
-        {app.status === "coming-soon" ? (
+        {app.status === "coming-soon" && (
           <span className="label-mono text-muted-foreground/70 inline-flex items-center gap-1">Coming soon</span>
-        ) : (
-          <a
-            href={app.productUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="label-mono text-muted-foreground hover:text-evoq-interactive inline-flex items-center gap-1 transition-colors"
-          >
-            Open app <ArrowUpRight className="size-3" />
-          </a>
         )}
       </header>
 

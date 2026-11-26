@@ -39,8 +39,9 @@ const catalog: Omit<LauncherApp, "status">[] = [
 ]
 
 /*
- * In-memory install state. Lives for the lifetime of the server process, which
- * is enough for the UI flow; swap for the real installer / device API later.
+ * Default status for a user who has never changed an app. A user's own
+ * subscribe / unsubscribe choices are stored per user in the database
+ * (see lib/server/subscriptions-store.ts) and passed in as `overrides`.
  */
 const initialStatus: Record<string, InstallStatus> = {
   crm: "installed",
@@ -52,21 +53,16 @@ const initialStatus: Record<string, InstallStatus> = {
   "healthcare-pms": "installed",
 }
 
-const state = new Map<string, InstallStatus>(
-  catalog.map((a) => [a.id, initialStatus[a.id] ?? "available"]),
-)
-
-export function listApps(): LauncherApp[] {
-  return catalog.map((a) => ({ ...a, status: state.get(a.id) ?? "available" }))
+function statusFor(id: string, overrides?: ReadonlyMap<string, InstallStatus>): InstallStatus {
+  const base = initialStatus[id] ?? "available"
+  if (base === "coming-soon") return base
+  return overrides?.get(id) ?? base
 }
 
-export function setStatus(id: string, status: InstallStatus): LauncherApp | undefined {
-  const app = catalog.find((a) => a.id === id)
-  if (!app) return undefined
-  state.set(id, status)
-  return { ...app, status }
+export function listApps(overrides?: ReadonlyMap<string, InstallStatus>): LauncherApp[] {
+  return catalog.map((a) => ({ ...a, status: statusFor(a.id, overrides) }))
 }
 
-export function getApp(id: string): LauncherApp | undefined {
-  return listApps().find((a) => a.id === id)
+export function getApp(id: string, overrides?: ReadonlyMap<string, InstallStatus>): LauncherApp | undefined {
+  return listApps(overrides).find((a) => a.id === id)
 }

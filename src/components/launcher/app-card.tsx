@@ -3,7 +3,7 @@
 import type { LauncherApp } from "@/lib/schemas/app"
 import { cn } from "@/lib/utils"
 import { AppActions } from "./app-actions"
-import { AgentTag, AppIcon, formatDate, StatusChip } from "./status"
+import { AppIcon, formatDate, StatusChip } from "./status"
 
 type Props = { app: LauncherApp; selected: boolean; onSelect: () => void }
 
@@ -59,9 +59,8 @@ export function AppCard({ app, selected, onSelect }: Props) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <StatusChip status={app.status} />
-          <AgentTag app={app} />
         </div>
 
         <dl className="text-evoq-body dark:text-muted-foreground flex flex-1 flex-col gap-1.5 text-[13px] leading-relaxed">
